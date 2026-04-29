@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-pending-bg:    #FEF3C7;
+  --color-pending-text:  #D97706;
+  --color-approved-bg:   #D1FAE5;
+  --color-approved-text: #059669;
+  --color-rejected-bg:   #FEE2E2;
+  --color-rejected-text: #DC2626;
+}
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  background-color: #F5F5F5;
+  color: #1A1A2E;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Montserrat Alternates', sans-serif;
+}
