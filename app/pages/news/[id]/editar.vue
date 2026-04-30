@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl">
+  <div class="w-full">
     <PageHeader title="Editar novedad">
       <template #actions>
         <Button variant="secondary" @click="navigateTo('/news')">Cancelar</Button>
@@ -13,15 +13,17 @@
     <div v-else class="bg-white rounded-2xl shadow-sm p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
-        <SelectField
-          v-model="form.category_id"
-          label="Categoría"
-          :options="categoryOptions"
-          placeholder="Seleccioná una categoría"
-        />
-        <TextareaField v-model="form.content" label="Contenido" :rows="6" required />
+        <TextareaField v-model="form.content" label="Contenido" :rows="14" required />
         <ImageUpload v-model="form.image_url" folder="news" label="Imagen" />
-        <DateField v-model="form.published_at" label="Fecha de publicación" />
+        <div class="grid grid-cols-2 gap-4">          
+          <SelectField
+            v-model="form.category_id"
+            label="Categoría"
+            :options="categoryOptions"
+            placeholder="Seleccioná una categoría"
+          />
+          <DateField v-model="form.publication_date" label="Fecha de publicación" :max="today" />
+        </div>
 
         <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
@@ -45,9 +47,10 @@ const form = reactive({
   category_id: '',
   content: '',
   image_url: '',
-  published_at: '',
+  publication_date: '',
 })
 
+const today = new Date().toISOString().split('T')[0]
 const pageLoading = ref(true)
 const loading = ref(false)
 const errorMsg = ref('')
@@ -76,7 +79,7 @@ onMounted(async () => {
     category_id: data.category_id ?? '',
     content: data.content ?? '',
     image_url: data.image_url ?? '',
-    published_at: data.published_at ? data.published_at.split('T')[0] : '',
+    publication_date: data.publication_date ?? '',
   })
 
   pageLoading.value = false

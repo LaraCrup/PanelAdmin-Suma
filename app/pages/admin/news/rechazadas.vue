@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader title="Novedades activas" />
+    <PageHeader title="Novedades rechazadas" />
 
     <div class="flex gap-3 mb-6">
       <BrandFilterSelect v-model="filterBrand" :brands="brands" />
@@ -10,7 +10,7 @@
       :columns="columns"
       :rows="newsList"
       :loading="loading"
-      emptyMessage="No hay novedades aprobadas"
+      emptyMessage="No hay novedades rechazadas"
     >
       <template #cell-brands="{ row }">
         {{ row.brands?.name ?? '—' }}
@@ -20,6 +20,9 @@
       </template>
       <template #cell-created_at="{ row }">
         {{ formatDate(row.created_at) }}
+      </template>
+      <template #cell-rejection_reason="{ row }">
+        <span class="text-muted text-sm">{{ row.rejection_reason ?? '—' }}</span>
       </template>
       <template #cell-actions="{ row }">
         <Button variant="secondary" @click="openView(row)">Ver</Button>
@@ -39,13 +42,17 @@
         <h2 class="font-heading text-xl font-bold text-text">{{ viewItem.title }}</h2>
         <img v-if="viewItem.image_url" :src="viewItem.image_url" :alt="viewItem.title" class="rounded-xl w-full object-cover max-h-64" />
         <p class="text-text whitespace-pre-wrap leading-relaxed">{{ viewItem.content }}</p>
+        <div v-if="viewItem.rejection_reason" class="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
+          <p class="text-xs font-semibold text-red-500 mb-1">Motivo de rechazo</p>
+          <p class="text-sm text-red-700 whitespace-pre-wrap">{{ viewItem.rejection_reason }}</p>
+        </div>
       </div>
     </Modal>
   </div>
 </template>
 
 <script setup>
-definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'superadmin', title: 'Novedades activas' })
+definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'superadmin', title: 'Novedades rechazadas' })
 
 const { newsList, loading, fetchNews, fetchOneNews } = useNews()
 const { fetchAllBrands } = useBrand()
@@ -59,10 +66,11 @@ const viewItem = ref(null)
 
 const columns = [
   { key: 'title', label: 'Título' },
-  { key: 'brands', label: 'Marca', width: '160px' },
-  { key: 'category', label: 'Categoría', width: '160px' },
-  { key: 'created_at', label: 'Fecha', width: '120px' },
-  { key: 'actions', label: '', width: '80px' },
+  { key: 'brands', label: 'Marca', width: '140px' },
+  { key: 'category', label: 'Categoría', width: '140px' },
+  { key: 'created_at', label: 'Fecha', width: '110px' },
+  { key: 'rejection_reason', label: 'Motivo de rechazo' },
+  { key: 'actions', label: '', width: '70px' },
 ]
 
 function formatDate(d) {
@@ -80,11 +88,11 @@ async function openView(row) {
 }
 
 watch(filterBrand, () => {
-  fetchNews({ status: 'approved', brandId: filterBrand.value || undefined })
+  fetchNews({ status: 'rejected', brandId: filterBrand.value || undefined })
 })
 
 onMounted(async () => {
   brands.value = await fetchAllBrands()
-  await fetchNews({ status: 'approved' })
+  await fetchNews({ status: 'rejected' })
 })
 </script>

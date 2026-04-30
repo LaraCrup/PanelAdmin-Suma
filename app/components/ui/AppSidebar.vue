@@ -14,8 +14,8 @@
       <template v-else>
         <div class="flex items-center gap-3">
           <img
-            v-if="authStore.brand?.logo_url"
-            :src="authStore.brand.logo_url"
+            v-if="authStore.brand?.image_url"
+            :src="authStore.brand.image_url"
             class="h-8 w-8 rounded-lg object-cover flex-shrink-0"
             alt="logo"
           />
@@ -23,13 +23,13 @@
             v-else
             class="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0"
           >
-            <span class="text-white font-bold text-sm">{{ brandInitial }}</span>
+            <span class="text-white font-medium text-sm">{{ brandInitial }}</span>
           </div>
           <div class="min-w-0">
             <p class="text-white font-heading font-bold text-sm leading-tight truncate">
               {{ authStore.brand?.name ?? 'Mi Marca' }}
             </p>
-            <p class="text-white/50 text-xs">powered by SUMA</p>
+            <p class="text-white/50 text-xs">powered by Suma</p>
           </div>
         </div>
       </template>
@@ -51,6 +51,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
           </svg>
           Novedades
+        </NuxtLink>
+        <NuxtLink to="/news/rechazadas" :class="linkClass('/news/rechazadas')">
+          <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Rechazadas
         </NuxtLink>
         <NuxtLink to="/benefits" :class="linkClass('/benefits')">
           <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,6 +80,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Activas
+        </NuxtLink>
+        <NuxtLink to="/admin/news/rechazadas" :class="linkClass('/admin/news/rechazadas')">
+          <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Rechazadas
         </NuxtLink>
 
         <p class="text-white/40 text-xs font-semibold uppercase tracking-wide px-3 pt-4 pb-1">Beneficios</p>

@@ -22,11 +22,11 @@
 
 <script setup>
 defineProps({
-  show: { type: Boolean, required: true },
-  title: { type: String, default: '¿Confirmar acción?' },
-  message: { type: String, default: '¿Estás seguro de que querés continuar?' },
-  confirmLabel: { type: String, default: 'Confirmar' },
-  variant: { type: String, default: 'danger' },
+  show:         { type: Boolean, required: true },
+  title:        { type: String,  default: '¿Confirmar acción?' },
+  message:      { type: String,  default: '¿Estás seguro de que querés continuar?' },
+  confirmLabel: { type: String,  default: 'Confirmar' },
+  variant:      { type: String,  default: 'danger' },
 })
 
 defineEmits(['confirm', 'cancel'])

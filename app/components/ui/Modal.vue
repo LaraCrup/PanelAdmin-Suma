@@ -12,7 +12,7 @@
           :class="sizeClass"
         >
           <div class="flex items-center justify-between px-6 py-4 border-b border-border">
-            <h3 class="font-heading text-lg font-bold text-text">{{ title }}</h3>
+            <h3 class="font-heading text-lg font-medium text-primary">{{ title }}</h3>
             <button
               class="text-muted hover:text-text transition-colors"
               @click="$emit('close')"
@@ -23,7 +23,7 @@
             </button>
           </div>
 
-          <div class="flex-1 overflow-y-auto px-6 py-4">
+          <div class="flex-1 overflow-y-auto px-6 pb-4">
             <slot />
           </div>
 

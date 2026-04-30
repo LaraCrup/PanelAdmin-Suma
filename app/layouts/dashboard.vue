@@ -11,7 +11,7 @@
         <div class="flex items-center gap-3">
           <div class="text-right">
             <p class="text-sm font-semibold text-text leading-tight">
-              {{ authStore.profile?.display_name ?? authStore.profile?.name ?? '' }}
+              {{ authStore.profile?.display_name || authStore.profile?.name || authStore.user?.email || '' }}
             </p>
             <p class="text-xs text-muted leading-tight">
               {{ authStore.isSuperAdmin ? 'Superadmin' : authStore.isBrandAdmin ? 'Admin' : 'Miembro' }}
@@ -36,10 +36,9 @@
 <script setup>
 const authStore = useAuthStore()
 const { initAuth } = useAuth()
-const supabaseUser = useSupabaseUser()
 
 const userInitial = computed(() => {
-  const name = authStore.profile?.display_name ?? authStore.profile?.name ?? ''
+  const name = authStore.profile?.display_name || authStore.profile?.name || authStore.user?.email || ''
   return name[0]?.toUpperCase() ?? '?'
 })
 

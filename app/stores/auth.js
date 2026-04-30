@@ -16,6 +16,9 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUserData(userId) {
     if (!userId) return
 
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    user.value = authUser
+
     const { data: profileData } = await supabase
       .from('profiles')
       .select('id, role, name, display_name')
@@ -27,23 +30,25 @@ export const useAuthStore = defineStore('auth', () => {
       return
     }
 
-    if (profileData) {
-      profile.value = profileData
-    } else {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      profile.value = {
-        id: userId,
-        role: 'user',
-        name: authUser?.user_metadata?.full_name ?? '',
-        display_name: authUser?.user_metadata?.display_name ?? '',
-      }
-    }
-
     const { data: brandUserData } = await supabase
       .from('brand_users')
-      .select('brand_id, role')
+      .select('brand_id, role, name')
       .eq('user_id', userId)
       .maybeSingle()
+
+    const resolvedName =
+      profileData?.display_name ||
+      profileData?.name ||
+      authUser?.user_metadata?.full_name ||
+      brandUserData?.name ||
+      ''
+
+    profile.value = {
+      id: userId,
+      role: profileData?.role ?? 'user',
+      name: resolvedName,
+      display_name: '',
+    }
 
     if (brandUserData) {
       brandId.value = brandUserData.brand_id
