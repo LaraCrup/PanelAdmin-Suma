@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl">
+  <div class="w-full">
     <PageHeader title="Nuevo beneficio">
       <template #actions>
         <Button variant="secondary" @click="navigateTo('/benefits')">Cancelar</Button>
@@ -9,10 +9,11 @@
     <div class="bg-white rounded-2xl shadow-sm p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
-        <TextareaField v-model="form.description" label="Descripción" :rows="3" />
-        <TextField v-model="form.discount" label="Descuento (%)" type="number" min="0" max="100" />
-        <ImageUpload v-model="form.image_url" folder="benefits" label="Imagen" />
-        <DateField v-model="form.valid_until" label="Válido hasta" :min="today" />
+        <TextareaField v-model="form.description" label="Descripción" :rows="3" required />
+        <TextField v-model="form.discount_code" label="Código de descuento" required />
+        <TextareaField v-model="form.terms_conditions" label="Términos y condiciones" :rows="3" required />
+        <ImageUpload v-model="form.image_url" folder="benefits" label="Imagen" required />
+        <DateField v-model="form.valid_until" label="Válido hasta" :min="tomorrow" required />
 
         <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
@@ -30,12 +31,13 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand
 
 const { createBenefit } = useBenefits()
 
-const today = new Date().toISOString().split('T')[0]
+const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
 const form = reactive({
   title: '',
   description: '',
-  discount: '',
+  discount_code: '',
+  terms_conditions: '',
   image_url: '',
   valid_until: '',
 })
@@ -48,7 +50,7 @@ async function handleSubmit() {
   errorMsg.value = ''
   const { error } = await createBenefit({
     ...form,
-    discount: form.discount ? Number(form.discount) : null,
+    valid_until: form.valid_until || null,
   })
   if (error) {
     errorMsg.value = error

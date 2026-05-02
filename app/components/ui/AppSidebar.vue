@@ -95,6 +95,12 @@
           </svg>
           Activos
         </NuxtLink>
+        <NuxtLink to="/admin/benefits/rechazados" :class="linkClass('/admin/benefits/rechazados')">
+          <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Rechazados
+        </NuxtLink>
 
         <p class="text-white/40 text-xs font-semibold uppercase tracking-wide px-3 pt-4 pb-1">Gestión</p>
         <NuxtLink to="/admin/usuarios" :class="linkClass('/admin/usuarios')">

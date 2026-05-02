@@ -7,7 +7,7 @@
       class="border border-border rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary"
       @change="$emit('update:modelValue', $event.target.value)"
     >
-      <option v-if="placeholder" value="" disabled :selected="!modelValue">{{ placeholder }}</option>
+      <option v-if="placeholder" value="">{{ placeholder }}</option>
       <option
         v-for="opt in options"
         :key="opt.value"

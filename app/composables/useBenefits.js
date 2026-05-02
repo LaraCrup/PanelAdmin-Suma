@@ -8,7 +8,7 @@ export function useBenefits() {
     loading.value = true
     let query = supabase
       .from('benefits')
-      .select('id, title, description, discount, status, level, brand_id, valid_until, created_at, brands(name)')
+      .select('id, title, description, discount_code, status, level, brand_id, valid_until, rejection_reason, created_at, brands!benefits_brand_id_fkey(name)')
       .order('created_at', { ascending: false })
 
     if (!authStore.isSuperAdmin && authStore.brandId) {
@@ -18,7 +18,8 @@ export function useBenefits() {
     if (filters.brandId) query = query.eq('brand_id', filters.brandId)
     if (filters.level) query = query.eq('level', filters.level)
 
-    const { data } = await query
+    const { data, error } = await query
+    if (error) console.error('[useBenefits] fetchBenefits error:', error)
     benefitsList.value = data ?? []
     loading.value = false
   }
@@ -26,7 +27,7 @@ export function useBenefits() {
   async function fetchOneBenefit(id) {
     const { data, error } = await supabase
       .from('benefits')
-      .select('*')
+      .select('*, brands!benefits_brand_id_fkey(name)')
       .eq('id', id)
       .single()
     return { data, error: error?.message ?? null }
@@ -36,6 +37,7 @@ export function useBenefits() {
     const { error } = await supabase.from('benefits').insert({
       ...data,
       brand_id: authStore.brandId,
+      created_by: authStore.profile?.id,
       status: 'pending',
     })
     return { error: error?.message ?? null }
@@ -58,11 +60,16 @@ export function useBenefits() {
     return { error: error?.message ?? null }
   }
 
-  async function rejectBenefit(id) {
+  async function rejectBenefit(id, reason) {
     const { error } = await supabase
       .from('benefits')
-      .update({ status: 'rejected' })
+      .update({ status: 'rejected', rejection_reason: reason })
       .eq('id', id)
+    return { error: error?.message ?? null }
+  }
+
+  async function deleteBenefit(id) {
+    const { error } = await supabase.from('benefits').delete().eq('id', id)
     return { error: error?.message ?? null }
   }
 
@@ -75,5 +82,6 @@ export function useBenefits() {
     updateBenefit,
     approveBenefit,
     rejectBenefit,
+    deleteBenefit,
   }
 }

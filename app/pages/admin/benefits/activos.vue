@@ -20,9 +20,6 @@
       <template #cell-brands="{ row }">
         {{ row.brands?.name ?? '—' }}
       </template>
-      <template #cell-discount="{ row }">
-        {{ row.discount != null ? row.discount + '%' : '—' }}
-      </template>
       <template #cell-level="{ row }">
         {{ row.level ?? '—' }}
       </template>
@@ -47,7 +44,6 @@ const brands = ref([])
 const columns = [
   { key: 'title', label: 'Título' },
   { key: 'brands', label: 'Marca', width: '160px' },
-  { key: 'discount', label: 'Descuento', width: '100px' },
   { key: 'level', label: 'Nivel', width: '80px' },
   { key: 'valid_until', label: 'Vence', width: '120px' },
 ]
