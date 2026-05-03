@@ -10,12 +10,12 @@
       <LoadingSpinner size="lg" class="text-primary" />
     </div>
 
-    <div v-else class="bg-white rounded-2xl shadow-sm p-6">
+    <div v-else class="bg-white rounded-2xl shadow-sm lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.content" label="Contenido" :rows="14" required />
         <ImageUpload v-model="form.image_url" folder="news" label="Imagen" />
-        <div class="grid grid-cols-2 gap-4">          
+        <div class="flex flex-col lg:grid lg:grid-cols-2 gap-4">          
           <SelectField
             v-model="form.category_id"
             label="Categoría"

@@ -6,13 +6,13 @@
       </template>
     </PageHeader>
 
-    <div class="bg-white rounded-2xl shadow-sm p-6">
+    <div class="bg-white rounded-2xl shadow-sm lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col lg:grid lg:grid-cols-2 gap-4">
           <TextField v-model="form.name" label="Nombre completo" required />
           <TextField v-model="form.email" label="Email" type="email" required />
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col lg:grid lg:grid-cols-2 gap-4">
           <div class="flex flex-col gap-2">
             <TextField v-model="form.password" label="Contraseña" type="password" required />
             <ul class="flex flex-col gap-1">

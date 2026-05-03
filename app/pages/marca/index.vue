@@ -3,7 +3,7 @@
     <PageHeader title="Mi Marca" />
 
     <!-- Brand display -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm p-2 lg:p-6 mb-6">
       <div class="flex items-center gap-4">
         <img
           v-if="brand?.image_url"
@@ -22,7 +22,7 @@
     </div>
 
     <!-- Users table -->
-    <div class="bg-white rounded-2xl shadow-sm p-6">
+    <div class="bg-white rounded-2xl shadow-sm lg>:p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-heading font-medium text-text">Usuarios de la marca</h2>
         <Button v-if="authStore.isBrandAdmin" size="sm" @click="navigateTo('/marca/nuevo-usuario')">

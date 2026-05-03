@@ -1,3 +1,17 @@
+const AUTH_ERROR_MAP = {
+  'Invalid login credentials':                'Credenciales inválidas. Verificá tu email y contraseña.',
+  'Email not confirmed':                      'Tu email no está confirmado. Revisá tu bandeja de entrada.',
+  'Too many requests':                        'Demasiados intentos. Esperá unos minutos antes de volver a intentar.',
+  'User not found':                           'No existe una cuenta con ese email.',
+  'Invalid email or password':                'Email o contraseña incorrectos.',
+  'Email rate limit exceeded':                'Demasiados intentos. Esperá unos minutos antes de volver a intentar.',
+}
+
+function translateAuthError(error) {
+  const msg = AUTH_ERROR_MAP[error.message] ?? 'Ocurrió un error al iniciar sesión. Intentá de nuevo.'
+  return { message: msg }
+}
+
 export function useAuth() {
   const supabase = useSupabaseClient()
   const supabaseUser = useSupabaseUser()
@@ -5,7 +19,7 @@ export function useAuth() {
 
   async function login(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { error }
+    if (error) return { error: translateAuthError(error) }
     await authStore.fetchUserData(data.user.id)
 
     if (!authStore.isSuperAdmin && !authStore.brandRole) {

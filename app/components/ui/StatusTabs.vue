@@ -4,7 +4,7 @@
       v-for="tab in tabs"
       :key="tab.value"
       :class="[
-        'px-4 py-2 rounded-xl text-sm font-semibold border transition-colors',
+        'px-4 py-2 rounded-xl text-xs lg:text-sm font-semibold border transition-colors',
         modelValue === tab.value
           ? 'bg-primary text-white border-primary'
           : 'bg-white text-muted border-border hover:border-primary hover:text-primary',

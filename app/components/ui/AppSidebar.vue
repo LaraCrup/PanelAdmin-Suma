@@ -1,8 +1,20 @@
 <template>
-  <aside class="w-60 h-screen bg-primary fixed left-0 top-0 flex flex-col z-40">
+  <!-- Overlay (mobile only) -->
+  <div
+    v-if="open"
+    class="fixed inset-0 bg-black/40 z-30 desktop:hidden"
+    @click="$emit('close')"
+  />
+
+  <aside
+    :class="[
+      'w-60 h-screen bg-primary fixed left-0 top-0 flex flex-col z-40 transition-transform duration-300 ease-in-out',
+      open ? 'translate-x-0' : '-translate-x-full desktop:translate-x-0',
+    ]"
+  >
 
     <!-- Header -->
-    <div class="p-5 border-b border-white/20">
+    <div class="p-5 border-b border-white/20 flex items-center justify-between gap-3">
       <template v-if="authStore.isSuperAdmin">
         <div class="flex items-center gap-3">
           <div class="h-8 w-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
@@ -33,6 +45,15 @@
           </div>
         </div>
       </template>
+
+      <button
+        class="desktop:hidden flex-shrink-0 text-white/60 hover:text-white transition-colors"
+        @click="$emit('close')"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <!-- Nav -->
@@ -134,6 +155,11 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  open: { type: Boolean, default: false },
+})
+const emit = defineEmits(['close'])
+
 const authStore = useAuthStore()
 const { logout } = useAuth()
 const route = useRoute()
@@ -149,6 +175,10 @@ function linkClass(path) {
       : 'text-white/80 hover:text-white hover:bg-white/10',
   ].join(' ')
 }
+
+watch(() => route.path, () => {
+  emit('close')
+})
 
 async function handleLogout() {
   await logout()

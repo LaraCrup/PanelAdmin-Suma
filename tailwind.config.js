@@ -23,6 +23,9 @@ export default {
         heading: ['"Montserrat Alternates"', 'sans-serif'],
         body:    ['Quicksand', 'sans-serif'],
       },
+      screens: {
+        desktop: '1080px',
+      },
     },
   },
   plugins: [],

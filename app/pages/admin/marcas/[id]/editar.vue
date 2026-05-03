@@ -10,7 +10,7 @@
       <LoadingSpinner size="lg" class="text-primary" />
     </div>
 
-    <div v-else class="bg-white rounded-2xl shadow-sm p-6">
+    <div v-else class="bg-white rounded-2xl shadow-sm lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.name" label="Nombre de la marca" required />
         <ImageUpload v-model="form.image_url" folder="brands" label="Logo" aspect="square" />
