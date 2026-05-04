@@ -10,7 +10,7 @@
       <LoadingSpinner size="lg" class="text-primary" />
     </div>
 
-    <div v-else class="bg-white rounded-2xl shadow-sm lg:p-6">
+    <div v-else class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.description" label="Descripción" :rows="3" required />
@@ -35,6 +35,7 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand
 
 const route = useRoute()
 const { fetchOneBenefit, updateBenefit } = useBenefits()
+const { deleteImage } = useImageUpload()
 
 const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
@@ -50,6 +51,7 @@ const form = reactive({
 const pageLoading = ref(true)
 const loading = ref(false)
 const errorMsg = ref('')
+let originalImageUrl = ''
 
 onMounted(async () => {
   const { data, error } = await fetchOneBenefit(route.params.id)
@@ -59,6 +61,7 @@ onMounted(async () => {
     return
   }
 
+  originalImageUrl = data.image_url ?? ''
   Object.assign(form, {
     title: data.title ?? '',
     description: data.description ?? '',
@@ -81,6 +84,9 @@ async function handleSubmit() {
   if (error) {
     errorMsg.value = error
   } else {
+    if (originalImageUrl && form.image_url !== originalImageUrl) {
+      await deleteImage(originalImageUrl)
+    }
     await navigateTo('/benefits')
   }
   loading.value = false

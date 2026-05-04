@@ -6,7 +6,7 @@
       </template>
     </PageHeader>
 
-    <div class="bg-white rounded-2xl shadow-sm lg:p-6">
+    <div class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.description" label="Descripción" :rows="3" required />

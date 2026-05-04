@@ -10,7 +10,7 @@
       <LoadingSpinner size="lg" class="text-primary" />
     </div>
 
-    <div v-else class="bg-white rounded-2xl shadow-sm lg:p-6">
+    <div v-else class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.name" label="Nombre de la marca" required />
         <ImageUpload v-model="form.image_url" folder="brands" label="Logo" aspect="square" />
@@ -31,6 +31,7 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'super
 
 const route = useRoute()
 const { fetchBrand, updateBrand, brand } = useBrand()
+const { deleteImage } = useImageUpload()
 
 const form = reactive({
   name: '',
@@ -40,6 +41,7 @@ const form = reactive({
 const pageLoading = ref(true)
 const loading = ref(false)
 const errorMsg = ref('')
+let originalImageUrl = ''
 
 onMounted(async () => {
   await fetchBrand(route.params.id)
@@ -47,6 +49,7 @@ onMounted(async () => {
     await navigateTo('/admin/marcas')
     return
   }
+  originalImageUrl = brand.value.image_url ?? ''
   form.name = brand.value.name ?? ''
   form.image_url = brand.value.image_url ?? ''
   pageLoading.value = false
@@ -59,6 +62,9 @@ async function handleSubmit() {
   if (error) {
     errorMsg.value = error
   } else {
+    if (originalImageUrl && form.image_url !== originalImageUrl) {
+      await deleteImage(originalImageUrl)
+    }
     await navigateTo('/admin/marcas')
   }
   loading.value = false

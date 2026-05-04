@@ -6,7 +6,7 @@
       </template>
     </PageHeader>
 
-    <div class="bg-white rounded-2xl shadow-sm lg:p-6">
+    <div class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.content" label="Contenido" :rows="14" required />
@@ -56,6 +56,10 @@ onMounted(async () => {
 })
 
 async function handleSubmit() {
+  if (!form.image_url) {
+    errorMsg.value = 'La imagen es obligatoria.'
+    return
+  }
   loading.value = true
   errorMsg.value = ''
   const { error } = await createNews(form)

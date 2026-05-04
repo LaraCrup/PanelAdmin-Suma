@@ -1,7 +1,8 @@
 <template>
   <div class="flex flex-col gap-1">
-    <label v-if="label" class="text-sm font-semibold text-text">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="text-sm font-semibold text-text">{{ label }}</label>
     <textarea
+      :id="inputId"
       :value="modelValue"
       :placeholder="placeholder"
       :rows="rows"
@@ -27,4 +28,6 @@ defineProps({
 })
 
 defineEmits(['update:modelValue'])
+
+const inputId = useId()
 </script>

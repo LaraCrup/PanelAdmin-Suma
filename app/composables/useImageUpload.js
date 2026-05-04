@@ -31,7 +31,8 @@ export function useImageUpload() {
     const idx = publicUrl.indexOf(marker)
     if (idx === -1) return
     const path = publicUrl.slice(idx + marker.length)
-    await supabase.storage.from(BUCKET).remove([path])
+    const { error } = await supabase.storage.from(BUCKET).remove([path])
+    if (error) console.error('[deleteImage] error al eliminar', path, ':', error.message)
   }
 
   return { uploadImage, deleteImage }

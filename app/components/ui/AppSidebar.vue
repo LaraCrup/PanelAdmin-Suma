@@ -47,6 +47,7 @@
       </template>
 
       <button
+        aria-label="Cerrar menú"
         class="desktop:hidden flex-shrink-0 text-white/60 hover:text-white transition-colors"
         @click="$emit('close')"
       >

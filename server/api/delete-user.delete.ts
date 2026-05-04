@@ -1,6 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
+import { serverSupabaseUser } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  let caller = null
+  try {
+    caller = await serverSupabaseUser(event)
+  } catch (e) {
+    console.error('[delete-user] serverSupabaseUser error:', e)
+  }
+  if (!caller) {
+    throw createError({ statusCode: 401, message: 'No autorizado.' })
+  }
+
   const config = useRuntimeConfig()
   const { userId, brandUserId } = await readBody(event)
 
@@ -8,9 +19,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Faltan campos requeridos.' })
   }
 
+  const supabaseUrl = config.public.supabase.url as string
+  const supabaseKey = config.supabaseServiceRoleKey as string
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('[delete-user] Missing Supabase URL or service role key')
+    throw createError({ statusCode: 500, message: 'Error de configuración del servidor.' })
+  }
+
   const adminClient = createClient(
-    process.env.SUPABASE_URL!,
-    config.supabaseServiceRoleKey as string,
+    supabaseUrl,
+    supabaseKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 

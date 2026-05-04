@@ -19,7 +19,23 @@ export function useAuth() {
 
   async function login(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { error: translateAuthError(error) }
+    if (error) {
+      if (error.message === 'Invalid login credentials') {
+        try {
+          const { exists } = await $fetch('/api/check-email', { method: 'POST', body: { email } })
+          return {
+            error: {
+              message: exists
+                ? 'Contraseña incorrecta.'
+                : 'No existe una cuenta con ese email.',
+            },
+          }
+        } catch {
+          // Si el check falla, usar mensaje genérico
+        }
+      }
+      return { error: translateAuthError(error) }
+    }
     await authStore.fetchUserData(data.user.id)
 
     if (!authStore.isSuperAdmin && !authStore.brandRole) {

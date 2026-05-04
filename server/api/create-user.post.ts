@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { serverSupabaseUser } from '#supabase/server'
 
 const AUTH_ERRORS: Record<string, string> = {
   'A user with this email address has already been registered': 'Ya existe un usuario registrado con ese email.',
@@ -14,6 +15,16 @@ function mapError(message: string): string {
 }
 
 export default defineEventHandler(async (event) => {
+  let caller = null
+  try {
+    caller = await serverSupabaseUser(event)
+  } catch (e) {
+    console.error('[create-user] serverSupabaseUser error:', e)
+  }
+  if (!caller) {
+    throw createError({ statusCode: 401, message: 'No autorizado.' })
+  }
+
   const config = useRuntimeConfig()
   const body = await readBody(event)
   const { email, password, name, brandId, brandRole } = body
@@ -22,9 +33,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Faltan campos requeridos.' })
   }
 
+  const supabaseUrl = config.public.supabase.url as string
+  const supabaseKey = config.supabaseServiceRoleKey as string
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('[create-user] Missing Supabase URL or service role key')
+    throw createError({ statusCode: 500, message: 'Error de configuración del servidor.' })
+  }
+
   const adminClient = createClient(
-    process.env.SUPABASE_URL!,
-    config.supabaseServiceRoleKey as string,
+    supabaseUrl,
+    supabaseKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 

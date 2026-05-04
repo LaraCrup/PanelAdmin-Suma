@@ -10,7 +10,7 @@
       <LoadingSpinner size="lg" class="text-primary" />
     </div>
 
-    <div v-else class="bg-white rounded-2xl shadow-sm lg:p-6">
+    <div v-else class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.content" label="Contenido" :rows="14" required />
@@ -41,6 +41,7 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand
 
 const route = useRoute()
 const { fetchOneNews, updateNews, fetchCategories } = useNews()
+const { deleteImage } = useImageUpload()
 
 const form = reactive({
   title: '',
@@ -56,6 +57,7 @@ const loading = ref(false)
 const errorMsg = ref('')
 const categories = ref([])
 const categoryOptions = computed(() => categories.value.map(c => ({ value: c.id, label: c.name })))
+let originalImageUrl = ''
 
 onMounted(async () => {
   const [{ data, error }, cats] = await Promise.all([
@@ -74,6 +76,7 @@ onMounted(async () => {
   }
 
   categories.value = cats
+  originalImageUrl = data.image_url ?? ''
   Object.assign(form, {
     title: data.title ?? '',
     category_id: data.category_id ?? '',
@@ -92,6 +95,9 @@ async function handleSubmit() {
   if (error) {
     errorMsg.value = error
   } else {
+    if (originalImageUrl && form.image_url !== originalImageUrl) {
+      await deleteImage(originalImageUrl)
+    }
     await navigateTo('/news')
   }
   loading.value = false

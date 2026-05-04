@@ -7,9 +7,10 @@
       class="relative w-full max-h-40 rounded-xl overflow-hidden border border-border"
       :class="aspectClass"
     >
-      <img :src="preview" class="w-full max-h-40 h-full object-contain" alt="preview" />
+      <img :src="preview" class="w-full max-h-40 h-full object-contain" alt="Imagen seleccionada" />
       <button
         type="button"
+        aria-label="Eliminar imagen"
         class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
         @click="removeImage"
       >
@@ -59,9 +60,15 @@ const { uploadImage, deleteImage } = useImageUpload()
 const uploading = ref(false)
 const error = ref('')
 const preview = ref(props.modelValue || '')
+// Guarda la URL original de la DB para no borrarla desde el componente
+// (la página de edición se encarga de eso al guardar)
+const dbUrl = ref(props.modelValue || '')
 
 watch(() => props.modelValue, (val) => {
-  if (val && !preview.value) preview.value = val
+  if (val && !preview.value) {
+    preview.value = val
+    dbUrl.value = val
+  }
 })
 
 const aspectClass = computed(() => ({
@@ -70,6 +77,10 @@ const aspectClass = computed(() => ({
   wide:   'aspect-[3/1]',
 }[props.aspect] ?? 'aspect-video'))
 
+function isSessionUpload(url) {
+  return url && url !== dbUrl.value
+}
+
 async function handleFile(e) {
   const file = e.target.files[0]
   if (!file) return
@@ -77,15 +88,15 @@ async function handleFile(e) {
   error.value = ''
   uploading.value = true
 
-  if (props.modelValue) {
-    await deleteImage(props.modelValue)
-  }
-
   const { url, error: uploadError } = await uploadImage(file, props.folder)
 
   if (uploadError) {
     error.value = uploadError
   } else {
+    // Si ya había una imagen subida en esta sesión (no la original de la DB), borrarla
+    if (isSessionUpload(preview.value)) {
+      deleteImage(preview.value)
+    }
     preview.value = url
     emit('update:modelValue', url)
   }
@@ -94,8 +105,11 @@ async function handleFile(e) {
   e.target.value = ''
 }
 
-async function removeImage() {
-  if (props.modelValue) await deleteImage(props.modelValue)
+function removeImage() {
+  // Si la imagen que se está quitando fue subida en esta sesión, borrarla del bucket
+  if (isSessionUpload(preview.value)) {
+    deleteImage(preview.value)
+  }
   preview.value = ''
   emit('update:modelValue', '')
 }

@@ -1,75 +1,55 @@
-# Nuxt Minimal Starter
+# PanelAdminSuma
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Panel de administración web para marcas que publican contenido en la plataforma **SUMA**.
+
+## Stack
+
+- [Nuxt 4](https://nuxt.com) + Vue 3
+- [Supabase](https://supabase.com) (PostgreSQL + Auth + Storage)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Pinia](https://pinia.vuejs.org)
+
+## Roles
+
+| Rol | Acceso |
+|-----|--------|
+| `superadmin` | Aprueba/rechaza contenido, gestiona marcas y usuarios |
+| `brand_admin` | Gestiona contenido y usuarios de su marca |
+| `brand_member` | Gestiona contenido de su marca (sin gestión de usuarios) |
+
+## Variables de entorno
+
+Copiá `.env.example` a `.env` y completá los valores:
+
+```bash
+cp .env.example .env
+```
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+> `SUPABASE_SERVICE_ROLE_KEY` se usa server-side para crear y eliminar usuarios de Supabase Auth. Nunca se expone al cliente.
 
 ## Setup
 
-Make sure to install dependencies:
-
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Desarrollo
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+La app corre en `http://localhost:3000`.
 
-Build the application for production:
+## Build de producción
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

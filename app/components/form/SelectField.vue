@@ -1,7 +1,8 @@
 <template>
   <div class="flex flex-col gap-1">
-    <label v-if="label" class="text-sm font-semibold text-text">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="text-sm font-semibold text-text">{{ label }}</label>
     <select
+      :id="inputId"
       :value="modelValue"
       v-bind="$attrs"
       class="border border-border rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary"
@@ -32,4 +33,6 @@ defineProps({
 })
 
 defineEmits(['update:modelValue'])
+
+const inputId = useId()
 </script>

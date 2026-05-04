@@ -46,6 +46,16 @@
       @confirm="handleDelete"
       @cancel="showConfirm = false"
     />
+
+    <Modal :show="showDeleteError" title="No se puede eliminar" @close="showDeleteError = false">
+      <p class="text-sm text-text">
+        La marca <span class="font-semibold">{{ selectedBrand?.name }}</span> tiene novedades o beneficios asociados.
+        Eliminá primero ese contenido antes de borrar la marca.
+      </p>
+      <template #footer>
+        <Button @click="showDeleteError = false">Entendido</Button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -58,6 +68,7 @@ const { deleteBrand } = useBrand()
 const brandsList = ref([])
 const loading = ref(false)
 const showConfirm = ref(false)
+const showDeleteError = ref(false)
 const selectedBrand = ref(null)
 
 const columns = [
@@ -89,7 +100,11 @@ function confirmDelete(brand) {
 
 async function handleDelete() {
   showConfirm.value = false
-  await deleteBrand(selectedBrand.value.id)
+  const { error } = await deleteBrand(selectedBrand.value.id)
+  if (error) {
+    showDeleteError.value = true
+    return
+  }
   await fetchBrands()
 }
 

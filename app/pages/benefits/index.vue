@@ -132,7 +132,8 @@ async function openView(row) {
 
 function formatDate(d) {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const [year, month, day] = d.split('T')[0].split('-').map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 onMounted(() => fetchBenefits())

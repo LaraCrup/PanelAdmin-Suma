@@ -88,10 +88,15 @@ function confirmRemove(user) {
 
 async function handleRemove() {
   showConfirm.value = false
-  await $fetch('/api/delete-user', {
-    method: 'DELETE',
-    body: { userId: selectedUser.value.user_id, brandUserId: selectedUser.value.id },
-  })
+  try {
+    await $fetch('/api/delete-user', {
+      method: 'DELETE',
+      query: { userId: selectedUser.value.user_id, brandUserId: selectedUser.value.id },
+    })
+  } catch (e) {
+    console.error('[handleRemove]', e)
+    return
+  }
   await fetchUsers()
 }
 
