@@ -9,6 +9,7 @@
     <div class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.name" label="Nombre de la marca" required />
+        <TextField v-model="form.website" label="Sitio web" type="url" placeholder="https://" />
         <ImageUpload v-model="form.image_url" folder="brands" label="Logo" aspect="square" />
 
         <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
@@ -30,6 +31,7 @@ const user = useSupabaseUser()
 
 const form = reactive({
   name: '',
+  website: '',
   image_url: '',
 })
 

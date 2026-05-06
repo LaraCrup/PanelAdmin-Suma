@@ -13,6 +13,7 @@
     <div v-else class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.name" label="Nombre de la marca" required />
+        <TextField v-model="form.website" label="Sitio web" type="url" placeholder="https://" />
         <ImageUpload v-model="form.image_url" folder="brands" label="Logo" aspect="square" />
 
         <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
@@ -35,6 +36,7 @@ const { deleteImage } = useImageUpload()
 
 const form = reactive({
   name: '',
+  website: '',
   image_url: '',
 })
 
@@ -51,6 +53,7 @@ onMounted(async () => {
   }
   originalImageUrl = brand.value.image_url ?? ''
   form.name = brand.value.name ?? ''
+  form.website = brand.value.website ?? ''
   form.image_url = brand.value.image_url ?? ''
   pageLoading.value = false
 })

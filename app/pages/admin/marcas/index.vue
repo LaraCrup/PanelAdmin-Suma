@@ -26,6 +26,10 @@
           <span class="text-primary text-sm font-bold">{{ row.name?.[0]?.toUpperCase() }}</span>
         </div>
       </template>
+      <template #cell-website="{ row }">
+        <a v-if="row.website" :href="row.website" target="_blank" rel="noopener noreferrer" class="text-primary text-sm underline truncate block">{{ row.website }}</a>
+        <span v-else class="text-muted">—</span>
+      </template>
       <template #cell-created_at="{ row }">
         {{ formatDate(row.created_at) }}
       </template>
@@ -74,6 +78,7 @@ const selectedBrand = ref(null)
 const columns = [
   { key: 'image_url', label: '', width: '100px' },
   { key: 'name', label: 'Nombre' },
+  { key: 'website', label: 'Sitio web' },
   { key: 'created_at', label: 'Creada', width: '140px' },
   { key: 'actions', label: '', width: '180px' },
 ]
@@ -87,7 +92,7 @@ async function fetchBrands() {
   loading.value = true
   const { data } = await supabase
     .from('brands')
-    .select('id, name, image_url, created_at')
+    .select('id, name, image_url, website, created_at')
     .order('name')
   brandsList.value = data ?? []
   loading.value = false

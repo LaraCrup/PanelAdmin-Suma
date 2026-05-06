@@ -17,7 +17,10 @@
         >
           <span class="text-primary font-bold text-2xl">{{ brand?.name?.[0]?.toUpperCase() ?? 'M' }}</span>
         </div>
-        <h2 class="font-heading font-medium text-text text-xl">{{ brand?.name }}</h2>
+        <div>
+          <h2 class="font-heading font-medium text-text text-xl">{{ brand?.name }}</h2>
+          <a v-if="brand?.website" :href="brand.website" target="_blank" rel="noopener noreferrer" class="text-sm text-primary underline">{{ brand.website }}</a>
+        </div>
       </div>
     </div>
 
