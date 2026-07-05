@@ -17,7 +17,7 @@
           v-if="row.image_url"
           :src="row.image_url"
           :alt="row.name"
-          class="h-16 w-16 rounded-lg object-coontain"
+          class="h-16 w-16 rounded-lg object-contain"
         />
         <div
           v-else
