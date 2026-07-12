@@ -27,7 +27,10 @@
         {{ formatDate(row.valid_until) }}
       </template>
       <template #cell-actions="{ row }">
-        <Button variant="secondary" @click="openView(row)">Ver</Button>
+        <div class="flex gap-2">
+          <Button variant="secondary" @click="openView(row)">Ver</Button>
+          <Button variant="secondary" @click="navigateTo(`/admin/benefits/${row.id}/editar`)">Editar</Button>
+        </div>
       </template>
     </DataTable>
 
@@ -76,7 +79,7 @@ const columns = [
   { key: 'brands', label: 'Marca', width: '160px' },
   { key: 'level', label: 'Nivel', width: '80px' },
   { key: 'valid_until', label: 'Vence', width: '120px' },
-  { key: 'actions', label: '', width: '70px' },
+  { key: 'actions', label: '', width: '150px' },
 ]
 
 function formatDate(d) {

@@ -25,6 +25,7 @@
       <template #cell-actions="{ row }">
         <div class="flex gap-2">
           <Button variant="secondary" @click="openView(row)">Ver</Button>
+          <Button variant="secondary" @click="navigateTo(`/admin/benefits/${row.id}/editar`)">Editar</Button>
           <Button
             variant="primary"
             :disabled="!selectedLevel[row.id]"
@@ -132,7 +133,7 @@ const columns = [
   { key: 'brands', label: 'Marca', width: '140px' },
   { key: 'valid_until', label: 'Vence', width: '110px' },
   { key: 'level', label: 'Nivel', width: '160px' },
-  { key: 'actions', label: '', width: '260px' },
+  { key: 'actions', label: '', width: '330px' },
 ]
 
 function formatDate(d) {

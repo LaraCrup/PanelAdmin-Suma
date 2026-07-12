@@ -52,6 +52,15 @@ export function useBenefits() {
     return { error: error?.message ?? null }
   }
 
+  async function adminUpdateBenefit(id, data) {
+    if (!authStore.isSuperAdmin) return { error: 'No autorizado' }
+    const { error } = await supabase
+      .from('benefits')
+      .update(data)
+      .eq('id', id)
+    return { error: error?.message ?? null }
+  }
+
   async function approveBenefit(id, levelNumber) {
     const { error } = await supabase
       .from('benefits')
@@ -80,6 +89,7 @@ export function useBenefits() {
     fetchOneBenefit,
     createBenefit,
     updateBenefit,
+    adminUpdateBenefit,
     approveBenefit,
     rejectBenefit,
     deleteBenefit,
