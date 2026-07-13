@@ -3,7 +3,6 @@
     <AppSidebar :open="sidebarOpen" @close="sidebarOpen = false" />
 
     <div class="desktop:ml-60 flex-1 flex flex-col overflow-hidden">
-      <!-- Topbar -->
       <header class="bg-white border-b border-border px-6 py-4 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center">
           <button
@@ -35,7 +34,6 @@
         </div>
       </header>
 
-      <!-- Main scrollable area -->
       <main class="flex-1 overflow-y-auto p-6">
         <slot />
       </main>

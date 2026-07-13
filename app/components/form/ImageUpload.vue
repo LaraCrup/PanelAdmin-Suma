@@ -60,8 +60,6 @@ const { uploadImage, deleteImage } = useImageUpload()
 const uploading = ref(false)
 const error = ref('')
 const preview = ref(props.modelValue || '')
-// Guarda la URL original de la DB para no borrarla desde el componente
-// (la página de edición se encarga de eso al guardar)
 const dbUrl = ref(props.modelValue || '')
 
 watch(() => props.modelValue, (val) => {
@@ -93,7 +91,6 @@ async function handleFile(e) {
   if (uploadError) {
     error.value = uploadError
   } else {
-    // Si ya había una imagen subida en esta sesión (no la original de la DB), borrarla
     if (isSessionUpload(preview.value)) {
       deleteImage(preview.value)
     }
@@ -106,7 +103,6 @@ async function handleFile(e) {
 }
 
 function removeImage() {
-  // Si la imagen que se está quitando fue subida en esta sesión, borrarla del bucket
   if (isSessionUpload(preview.value)) {
     deleteImage(preview.value)
   }

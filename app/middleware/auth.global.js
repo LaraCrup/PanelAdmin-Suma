@@ -1,19 +1,19 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   const supabase = useSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = useSupabaseUser()
 
-  if (!user && to.path !== '/login') {
+  if (!user.value && to.path !== '/login') {
     return navigateTo('/login')
   }
-  if (user && to.path === '/login') {
+  if (user.value && to.path === '/login') {
     return navigateTo('/')
   }
 
-  if (user?.id) {
+  if (user.value?.id) {
     const authStore = useAuthStore()
     if (!authStore.profile) {
       try {
-        await authStore.fetchUserData(user.id)
+        await authStore.fetchUserData(user.value.id)
       } catch {
         await supabase.auth.signOut()
         authStore.clear()

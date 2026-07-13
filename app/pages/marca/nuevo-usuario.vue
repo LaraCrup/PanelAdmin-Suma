@@ -15,17 +15,7 @@
         <div class="flex flex-col lg:grid lg:grid-cols-2 gap-4">
           <div class="flex flex-col gap-2">
             <TextField v-model="form.password" label="Contraseña" type="password" required />
-            <ul class="flex flex-col gap-1">
-              <li
-                v-for="rule in passwordRules"
-                :key="rule.label"
-                class="flex items-center gap-1.5 text-xs"
-                :class="rule.passes ? 'text-green-600' : 'text-muted'"
-              >
-                <span class="text-base leading-none">{{ rule.passes ? '✓' : '·' }}</span>
-                {{ rule.label }}
-              </li>
-            </ul>
+            <PasswordChecklist :rules="passwordRules" />
           </div>
           <SelectField
             v-model="form.brandRole"
@@ -60,15 +50,7 @@ const form = reactive({
 const loading = ref(false)
 const errorMsg = ref('')
 
-const passwordRules = computed(() => [
-  { label: 'Mínimo 8 caracteres',  passes: form.password.length >= 8 },
-  { label: 'Una letra mayúscula',  passes: /[A-Z]/.test(form.password) },
-  { label: 'Una letra minúscula',  passes: /[a-z]/.test(form.password) },
-  { label: 'Un número',            passes: /[0-9]/.test(form.password) },
-  { label: 'Un carácter especial', passes: /[^A-Za-z0-9]/.test(form.password) },
-])
-
-const passwordValid = computed(() => passwordRules.value.every(r => r.passes))
+const { passwordRules, passwordValid } = usePasswordValidation(computed(() => form.password))
 
 async function handleSubmit() {
   if (!passwordValid.value) {

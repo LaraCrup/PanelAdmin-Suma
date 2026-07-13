@@ -14,7 +14,6 @@ function translateAuthError(error) {
 
 export function useAuth() {
   const supabase = useSupabaseClient()
-  const supabaseUser = useSupabaseUser()
   const authStore = useAuthStore()
 
   async function login(email, password) {
@@ -30,9 +29,7 @@ export function useAuth() {
                 : 'No existe una cuenta con ese email.',
             },
           }
-        } catch {
-          // Si el check falla, usar mensaje genérico
-        }
+        } catch {}
       }
       return { error: translateAuthError(error) }
     }
@@ -62,15 +59,5 @@ export function useAuth() {
     }
   }
 
-  return {
-    login,
-    logout,
-    initAuth,
-    isSuperAdmin: computed(() => authStore.isSuperAdmin),
-    isBrandAdmin: computed(() => authStore.isBrandAdmin),
-    isBrandMember: computed(() => authStore.isBrandMember),
-    brandId: computed(() => authStore.brandId),
-    profile: computed(() => authStore.profile),
-    brand: computed(() => authStore.brand),
-  }
+  return { login, logout, initAuth }
 }

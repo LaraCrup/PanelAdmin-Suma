@@ -66,12 +66,15 @@ export function useNews() {
       category_id: data.category_id || null,
       publication_date: data.publication_date || null,
     }
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('news')
       .update(payload)
       .eq('id', id)
       .eq('status', 'pending')
-    return { error: error?.message ?? null }
+      .select('id')
+    if (error) return { error: error.message }
+    if (!updated?.length) return { error: 'La novedad ya no está pendiente y no se puede editar.' }
+    return { error: null }
   }
 
   async function approveNews(id) {

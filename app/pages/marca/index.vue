@@ -2,7 +2,6 @@
   <div>
     <PageHeader title="Mi Marca" />
 
-    <!-- Brand display -->
     <div class="bg-white rounded-2xl shadow-sm p-2 lg:p-6 mb-6">
       <div class="flex items-center gap-4">
         <img
@@ -24,14 +23,14 @@
       </div>
     </div>
 
-    <!-- Users table -->
     <div class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-heading font-medium text-text">Usuarios de la marca</h2>
-        <Button v-if="authStore.isBrandAdmin" size="sm" @click="navigateTo('/marca/nuevo-usuario')">
+        <Button v-if="authStore.isBrandAdmin" @click="navigateTo('/marca/nuevo-usuario')">
           + Nuevo usuario
         </Button>
       </div>
+      <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
       <DataTable
         :columns="userColumns"
         :rows="brandUsers"
@@ -66,7 +65,6 @@
           <Button
             v-if="authStore.isBrandAdmin && row.user_id !== authStore.user?.id"
             variant="danger"
-            size="sm"
             @click="confirmRemove(row)"
           >
             Eliminar
@@ -96,6 +94,7 @@ const { brandUsers, loading: loadingUsers, fetchBrandUsers, updateUserRole, remo
 
 const showConfirm = ref(false)
 const selectedUser = ref(null)
+const errorMsg = ref('')
 
 const userColumns = [
   { key: 'name',    label: 'Nombre' },
@@ -109,7 +108,12 @@ onMounted(async () => {
 })
 
 async function handleRoleChange(brandUserId, role) {
-  await updateUserRole(brandUserId, role)
+  errorMsg.value = ''
+  const { error } = await updateUserRole(brandUserId, role)
+  if (error) {
+    errorMsg.value = 'No se pudo actualizar el rol.'
+    await fetchBrandUsers(authStore.brandId)
+  }
 }
 
 function confirmRemove(user) {
@@ -119,7 +123,9 @@ function confirmRemove(user) {
 
 async function handleRemove() {
   showConfirm.value = false
-  await removeUserFromBrand(selectedUser.value.id, selectedUser.value.user_id)
+  errorMsg.value = ''
+  const { error } = await removeUserFromBrand(selectedUser.value.id, selectedUser.value.user_id)
+  if (error) errorMsg.value = error
   await fetchBrandUsers(authStore.brandId)
 }
 </script>

@@ -45,30 +45,13 @@
       </template>
     </DataTable>
 
-    <Modal :show="showView" title="Detalle de beneficio" size="lg" @close="showView = false">
-      <div v-if="viewLoading" class="flex justify-center py-8">
-        <LoadingSpinner size="lg" class="text-primary" />
-      </div>
-      <div v-else-if="viewItem" class="flex flex-col gap-4">
-        <div class="flex flex-wrap gap-4 text-sm text-muted">
-          <span><span class="font-semibold text-text">Marca:</span> {{ viewItem.brands?.name ?? '—' }}</span>
-          <span><span class="font-semibold text-text">Nivel:</span> {{ viewItem.level ?? '—' }}</span>
-          <span><span class="font-semibold text-text">Vence:</span> {{ formatDate(viewItem.valid_until) }}</span>
-        </div>
-        <h2 class="font-heading text-xl font-bold text-text">{{ viewItem.title }}</h2>
-        <img v-if="viewItem.image_url" :src="viewItem.image_url" :alt="viewItem.title" class="rounded-xl w-full object-cover max-h-64" />
-        <p class="text-text whitespace-pre-wrap leading-relaxed">{{ viewItem.description }}</p>
-        <div v-if="viewItem.discount_code" class="text-sm">
-          <span class="font-semibold text-text">Código de descuento:</span> {{ viewItem.discount_code }}
-        </div>
-        <div v-if="viewItem.terms_conditions" class="text-sm">
-          <span class="font-semibold text-text">Términos y condiciones:</span>
-          <p class="mt-1 text-muted whitespace-pre-wrap">{{ viewItem.terms_conditions }}</p>
-        </div>
-      </div>
-    </Modal>
+    <BenefitDetailModal
+      :show="showView"
+      :loading="viewLoading"
+      :item="viewItem"
+      @close="showView = false"
+    />
 
-    <!-- Approve confirmation -->
     <Modal :show="showApproveModal" title="Confirmar aprobación" @close="showApproveModal = false">
       <p class="text-sm text-muted mb-2">
         ¿Aprobás el beneficio <strong class="text-text">{{ selectedItem?.title }}</strong>
@@ -80,7 +63,6 @@
       </template>
     </Modal>
 
-    <!-- Reject modal con motivo -->
     <Modal :show="showRejectModal" title="Rechazar beneficio" size="md" @close="closeReject">
       <div class="flex flex-col gap-4 pt-2">
         <p class="text-sm text-muted">
@@ -123,10 +105,7 @@ const showApproveModal = ref(false)
 const showRejectModal = ref(false)
 const rejectReason = ref('')
 const selectedItem = ref(null)
-
-const showView = ref(false)
-const viewLoading = ref(false)
-const viewItem = ref(null)
+const { showView, viewLoading, viewItem, openView } = useDetailModal(fetchOneBenefit)
 
 const columns = [
   { key: 'title', label: 'Título' },
@@ -135,20 +114,6 @@ const columns = [
   { key: 'level', label: 'Nivel', width: '160px' },
   { key: 'actions', label: '', width: '330px' },
 ]
-
-function formatDate(d) {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-async function openView(row) {
-  showView.value = true
-  viewLoading.value = true
-  viewItem.value = null
-  const { data } = await fetchOneBenefit(row.id)
-  viewItem.value = data
-  viewLoading.value = false
-}
 
 function openApprove(item) {
   selectedItem.value = item

@@ -83,11 +83,6 @@ const columns = [
   { key: 'actions', label: '', width: '180px' },
 ]
 
-function formatDate(d) {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
 async function fetchBrands() {
   loading.value = true
   const { data } = await supabase

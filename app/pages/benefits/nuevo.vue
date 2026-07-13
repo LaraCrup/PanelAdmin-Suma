@@ -46,6 +46,10 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 async function handleSubmit() {
+  if (!form.image_url) {
+    errorMsg.value = 'La imagen es obligatoria.'
+    return
+  }
   loading.value = true
   errorMsg.value = ''
   const { error } = await createBenefit({

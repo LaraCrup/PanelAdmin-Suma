@@ -33,6 +33,36 @@ export default defineEventHandler(async (event) => {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
+  const { data: targetBrandUser } = await adminClient
+    .from('brand_users')
+    .select('brand_id')
+    .eq('id', brandUserId)
+    .maybeSingle()
+
+  if (!targetBrandUser) {
+    throw createError({ statusCode: 404, message: 'Usuario no encontrado.' })
+  }
+
+  const { data: callerProfile } = await adminClient
+    .from('profiles')
+    .select('role')
+    .eq('id', caller.id)
+    .maybeSingle()
+
+  if (callerProfile?.role !== 'superadmin') {
+    const { data: callerBrandUser } = await adminClient
+      .from('brand_users')
+      .select('id')
+      .eq('user_id', caller.id)
+      .eq('brand_id', targetBrandUser.brand_id)
+      .eq('role', 'admin')
+      .maybeSingle()
+
+    if (!callerBrandUser) {
+      throw createError({ statusCode: 403, message: 'No autorizado.' })
+    }
+  }
+
   const { error: brandUserError } = await adminClient
     .from('brand_users')
     .delete()

@@ -10,6 +10,8 @@
       <BrandFilterSelect v-model="filterBrand" :brands="brands" />
     </div>
 
+    <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
+
     <DataTable
       :columns="columns"
       :rows="filteredUsers"
@@ -57,6 +59,7 @@ const brands = ref([])
 const filterBrand = ref('')
 const showConfirm = ref(false)
 const selectedUser = ref(null)
+const errorMsg = ref('')
 
 const columns = [
   { key: 'name', label: 'Nombre' },
@@ -88,13 +91,14 @@ function confirmRemove(user) {
 
 async function handleRemove() {
   showConfirm.value = false
+  errorMsg.value = ''
   try {
     await $fetch('/api/delete-user', {
       method: 'DELETE',
-      query: { userId: selectedUser.value.user_id, brandUserId: selectedUser.value.id },
+      body: { userId: selectedUser.value.user_id, brandUserId: selectedUser.value.id },
     })
   } catch (e) {
-    console.error('[handleRemove]', e)
+    errorMsg.value = e.data?.message ?? 'No se pudo eliminar el usuario.'
     return
   }
   await fetchUsers()

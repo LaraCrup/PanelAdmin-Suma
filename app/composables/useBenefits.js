@@ -44,12 +44,15 @@ export function useBenefits() {
   }
 
   async function updateBenefit(id, data) {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('benefits')
       .update(data)
       .eq('id', id)
       .eq('status', 'pending')
-    return { error: error?.message ?? null }
+      .select('id')
+    if (error) return { error: error.message }
+    if (!updated?.length) return { error: 'El beneficio ya no está pendiente y no se puede editar.' }
+    return { error: null }
   }
 
   async function adminUpdateBenefit(id, data) {

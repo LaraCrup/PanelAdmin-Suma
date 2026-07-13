@@ -8,6 +8,8 @@
 
     <StatusTabs v-model="filterStatus" :counts="counts" />
 
+    <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
+
     <DataTable
       :columns="columns"
       :rows="filtered"
@@ -47,32 +49,12 @@
       @cancel="showDeleteModal = false"
     />
 
-    <Modal :show="showView" title="Detalle de beneficio" size="lg" @close="showView = false">
-      <div v-if="viewLoading" class="flex justify-center py-8">
-        <LoadingSpinner size="lg" class="text-primary" />
-      </div>
-      <div v-else-if="viewItem" class="flex flex-col gap-4">
-        <div class="flex flex-wrap gap-4 text-sm text-muted">
-          <span><span class="font-semibold text-text">Marca:</span> {{ viewItem.brands?.name ?? '—' }}</span>
-          <span><span class="font-semibold text-text">Nivel:</span> {{ viewItem.level ?? '—' }}</span>
-          <span><span class="font-semibold text-text">Vence:</span> {{ formatDate(viewItem.valid_until) }}</span>
-        </div>
-        <h2 class="font-heading text-xl font-bold text-text">{{ viewItem.title }}</h2>
-        <img v-if="viewItem.image_url" :src="viewItem.image_url" :alt="viewItem.title" class="rounded-xl w-full object-cover max-h-64" />
-        <p class="text-text whitespace-pre-wrap leading-relaxed">{{ viewItem.description }}</p>
-        <div v-if="viewItem.discount_code" class="text-sm">
-          <span class="font-semibold text-text">Código de descuento:</span> {{ viewItem.discount_code }}
-        </div>
-        <div v-if="viewItem.terms_conditions" class="text-sm">
-          <span class="font-semibold text-text">Términos y condiciones:</span>
-          <p class="mt-1 text-muted whitespace-pre-wrap">{{ viewItem.terms_conditions }}</p>
-        </div>
-        <div v-if="viewItem.rejection_reason" class="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
-          <p class="text-xs font-semibold text-red-500 mb-1">Motivo de rechazo</p>
-          <p class="text-sm text-red-700 whitespace-pre-wrap">{{ viewItem.rejection_reason }}</p>
-        </div>
-      </div>
-    </Modal>
+    <BenefitDetailModal
+      :show="showView"
+      :loading="viewLoading"
+      :item="viewItem"
+      @close="showView = false"
+    />
   </div>
 </template>
 
@@ -82,9 +64,7 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand
 const { benefitsList, loading, fetchBenefits, fetchOneBenefit, deleteBenefit } = useBenefits()
 
 const filterStatus = ref('')
-const showView = ref(false)
-const viewLoading = ref(false)
-const viewItem = ref(null)
+const { showView, viewLoading, viewItem, openView } = useDetailModal(fetchOneBenefit)
 
 const columns = [
   { key: 'title', label: 'Título' },
@@ -109,6 +89,7 @@ const counts = computed(() => ({
 
 const showDeleteModal = ref(false)
 const benefitToDelete = ref(null)
+const errorMsg = ref('')
 
 function confirmDelete(row) {
   benefitToDelete.value = row
@@ -117,23 +98,10 @@ function confirmDelete(row) {
 
 async function handleDelete() {
   showDeleteModal.value = false
-  await deleteBenefit(benefitToDelete.value.id)
+  errorMsg.value = ''
+  const { error } = await deleteBenefit(benefitToDelete.value.id)
+  if (error) errorMsg.value = 'No se pudo eliminar el beneficio.'
   await fetchBenefits()
-}
-
-async function openView(row) {
-  showView.value = true
-  viewLoading.value = true
-  viewItem.value = null
-  const { data } = await fetchOneBenefit(row.id)
-  viewItem.value = data
-  viewLoading.value = false
-}
-
-function formatDate(d) {
-  if (!d) return '—'
-  const [year, month, day] = d.split('T')[0].split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 onMounted(() => fetchBenefits())

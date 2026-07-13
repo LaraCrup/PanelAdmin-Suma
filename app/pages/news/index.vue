@@ -8,6 +8,8 @@
 
     <StatusTabs v-model="filterStatus" :counts="counts" />
 
+    <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
+
     <DataTable
       :columns="columns"
       :rows="filtered"
@@ -41,24 +43,13 @@
       </template>
     </DataTable>
 
-    <Modal :show="showView" title="Detalle de novedad" size="lg" @close="showView = false">
-      <div v-if="viewLoading" class="flex justify-center py-8">
-        <LoadingSpinner size="lg" class="text-primary" />
-      </div>
-      <div v-else-if="viewItem" class="flex flex-col gap-4">
-        <div class="flex flex-wrap gap-4 text-sm text-muted">
-          <span><span class="font-semibold text-text">Categoría:</span> {{ viewItem.news_categories?.name ?? '—' }}</span>
-          <span><span class="font-semibold text-text">Fecha:</span> {{ formatDate(viewItem.created_at) }}</span>
-        </div>
-        <h2 class="font-heading text-xl font-bold text-text">{{ viewItem.title }}</h2>
-        <img v-if="viewItem.image_url" :src="viewItem.image_url" :alt="viewItem.title" class="rounded-xl w-full object-cover max-h-64" />
-        <p class="text-text whitespace-pre-wrap leading-relaxed">{{ viewItem.content }}</p>
-        <div v-if="viewItem.rejection_reason" class="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
-          <p class="text-xs font-semibold text-red-500 mb-1">Motivo de rechazo</p>
-          <p class="text-sm text-red-700 whitespace-pre-wrap">{{ viewItem.rejection_reason }}</p>
-        </div>
-      </div>
-    </Modal>
+    <NewsDetailModal
+      :show="showView"
+      :loading="viewLoading"
+      :item="viewItem"
+      :show-brand="false"
+      @close="showView = false"
+    />
 
     <ConfirmModal
       :show="showDeleteModal"
@@ -77,10 +68,7 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand
 const { newsList, loading, fetchNews, fetchOneNews, deleteNews } = useNews()
 
 const filterStatus = ref('')
-
-const showView = ref(false)
-const viewLoading = ref(false)
-const viewItem = ref(null)
+const { showView, viewLoading, viewItem, openView } = useDetailModal(fetchOneNews)
 
 const columns = computed(() => {
   const base = [
@@ -111,15 +99,7 @@ const counts = computed(() => ({
 
 const showDeleteModal = ref(false)
 const newsToDelete = ref(null)
-
-async function openView(row) {
-  showView.value = true
-  viewLoading.value = true
-  viewItem.value = null
-  const { data } = await fetchOneNews(row.id)
-  viewItem.value = data
-  viewLoading.value = false
-}
+const errorMsg = ref('')
 
 function confirmDelete(row) {
   newsToDelete.value = row
@@ -128,14 +108,10 @@ function confirmDelete(row) {
 
 async function handleDelete() {
   showDeleteModal.value = false
-  await deleteNews(newsToDelete.value.id)
+  errorMsg.value = ''
+  const { error } = await deleteNews(newsToDelete.value.id)
+  if (error) errorMsg.value = 'No se pudo eliminar la novedad.'
   await fetchNews()
-}
-
-function formatDate(d) {
-  if (!d) return '—'
-  const [year, month, day] = d.split('T')[0].split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 onMounted(() => fetchNews())
