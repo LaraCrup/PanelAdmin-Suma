@@ -20,6 +20,7 @@
       <template #cell-actions="{ row }">
         <div class="flex gap-2">
           <Button variant="secondary" @click="openView(row)">Ver</Button>
+          <Button variant="secondary" @click="navigateTo(`/admin/news/${row.id}/editar`)">Editar</Button>
           <Button variant="primary" :loading="actionLoading === row.id + 'a'" @click="handleApprove(row.id)">
             Aprobar
           </Button>
@@ -83,7 +84,7 @@ const columns = [
   { key: 'brands', label: 'Marca', width: '160px' },
   { key: 'category', label: 'Categoría', width: '160px' },
   { key: 'created_at', label: 'Fecha', width: '120px' },
-  { key: 'actions', label: '', width: '240px' },
+  { key: 'actions', label: '', width: '320px' },
 ]
 
 async function handleApprove(id) {

@@ -77,6 +77,24 @@ export function useNews() {
     return { error: null }
   }
 
+  async function adminUpdateNews(id, data) {
+    if (!authStore.isSuperAdmin) return { error: 'No autorizado' }
+    const today = new Date().toISOString().split('T')[0]
+    if (data.publication_date && data.publication_date > today) {
+      return { error: 'La fecha de publicación no puede ser una fecha futura.' }
+    }
+    const payload = {
+      ...data,
+      category_id: data.category_id || null,
+      publication_date: data.publication_date || null,
+    }
+    const { error } = await supabase
+      .from('news')
+      .update(payload)
+      .eq('id', id)
+    return { error: error?.message ?? null }
+  }
+
   async function approveNews(id) {
     const { error } = await supabase
       .from('news')
@@ -108,6 +126,7 @@ export function useNews() {
     fetchOneNews,
     createNews,
     updateNews,
+    adminUpdateNews,
     deleteNews,
     approveNews,
     rejectNews,
