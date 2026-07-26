@@ -24,7 +24,39 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'es',
+      },
+      meta: [
+        {
+          name: 'description',
+          content: 'Panel de administración de Suma para la gestión de marcas, beneficios y novedades.',
+        },
+        {
+          name: 'robots',
+          content: 'noindex, nofollow',
+        },
+        {
+          name: 'theme-color',
+          content: '#157a6e',
+        },
+      ],
       link: [
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: '/favicon.ico',
+          sizes: '32x32',
+        },
+        {
+          rel: 'icon',
+          type: 'image/svg+xml',
+          href: '/favicon-cuadrado.svg',
+        },
+        {
+          rel: 'apple-touch-icon',
+          href: '/apple-touch-icon.png',
+        },
         {
           rel: 'preconnect',
           href: 'https://fonts.googleapis.com',

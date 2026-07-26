@@ -8,7 +8,7 @@
           v-if="brand?.image_url"
           :src="brand.image_url"
           class="h-20 w-20 rounded-xl object-contain flex-shrink-0"
-          alt="logo"
+          :alt="brand?.name || 'Logo de la marca'"
         />
         <div
           v-else

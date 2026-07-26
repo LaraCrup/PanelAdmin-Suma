@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-definePageMeta({ layout: 'auth' })
+definePageMeta({ layout: 'auth', title: 'Iniciar sesión' })
 
 const { login } = useAuth()
 

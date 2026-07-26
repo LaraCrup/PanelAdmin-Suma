@@ -26,7 +26,7 @@
             v-if="authStore.brand?.image_url"
             :src="authStore.brand.image_url"
             class="h-8 w-8 rounded-lg object-cover flex-shrink-0"
-            alt="logo"
+            :alt="authStore.brand?.name || 'Logo de la marca'"
           />
           <div
             v-else
