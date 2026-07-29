@@ -1,6 +1,8 @@
 <template>
   <div class="flex flex-col gap-2">
-    <label v-if="label" class="text-sm font-semibold text-text">{{ label }}</label>
+    <label v-if="label" class="text-sm font-semibold text-text">
+      {{ label }}<span v-if="required" class="text-red-500"> *</span>
+    </label>
 
     <div
       v-if="preview"
@@ -51,6 +53,7 @@ const props = defineProps({
   folder: { type: String, required: true },
   label: { type: String, default: '' },
   aspect: { type: String, default: 'video' },
+  required: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])

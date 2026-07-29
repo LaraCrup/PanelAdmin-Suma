@@ -6,6 +6,8 @@
       </template>
     </PageHeader>
 
+    <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
+
     <DataTable
       :columns="columns"
       :rows="brandsList"
@@ -44,22 +46,12 @@
     <ConfirmModal
       :show="showConfirm"
       title="Eliminar marca"
-      :message="`¿Eliminás la marca &quot;${selectedBrand?.name}&quot;? Esta acción no se puede deshacer.`"
-      confirmLabel="Eliminar"
+      :message="confirmMessage"
+      confirmLabel="Eliminar todo"
       variant="danger"
       @confirm="handleDelete"
       @cancel="showConfirm = false"
     />
-
-    <Modal :show="showDeleteError" title="No se puede eliminar" @close="showDeleteError = false">
-      <p class="text-sm text-text">
-        La marca <span class="font-semibold">{{ selectedBrand?.name }}</span> tiene novedades o beneficios asociados.
-        Eliminá primero ese contenido antes de borrar la marca.
-      </p>
-      <template #footer>
-        <Button @click="showDeleteError = false">Entendido</Button>
-      </template>
-    </Modal>
   </div>
 </template>
 
@@ -67,13 +59,29 @@
 definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'superadmin', title: 'Marcas' })
 
 const supabase = useSupabaseClient()
-const { deleteBrand } = useBrand()
+const { fetchBrandImpact, deleteBrand } = useBrand()
 
 const brandsList = ref([])
 const loading = ref(false)
+const deleting = ref(false)
 const showConfirm = ref(false)
-const showDeleteError = ref(false)
 const selectedBrand = ref(null)
+const impact = ref(null)
+const errorMsg = ref('')
+
+const confirmMessage = computed(() => {
+  const nombre = selectedBrand.value?.name ?? ''
+  if (!impact.value) return `¿Eliminás la marca "${nombre}"? Esta acción no se puede deshacer.`
+
+  const partes = []
+  if (impact.value.news) partes.push(`${impact.value.news} novedad${impact.value.news === 1 ? '' : 'es'}`)
+  if (impact.value.benefits) partes.push(`${impact.value.benefits} beneficio${impact.value.benefits === 1 ? '' : 's'}`)
+  if (impact.value.users) partes.push(`${impact.value.users} usuario${impact.value.users === 1 ? '' : 's'}`)
+
+  if (!partes.length) return `¿Eliminás la marca "${nombre}"? Esta acción no se puede deshacer.`
+
+  return `Al eliminar la marca "${nombre}" también se borran ${partes.join(', ')}, junto con sus imágenes. Esta acción no se puede deshacer.`
+})
 
 const columns = [
   { key: 'image_url', label: '', width: '100px' },
@@ -93,18 +101,22 @@ async function fetchBrands() {
   loading.value = false
 }
 
-function confirmDelete(brand) {
+async function confirmDelete(brand) {
   selectedBrand.value = brand
+  impact.value = null
+  errorMsg.value = ''
   showConfirm.value = true
+  impact.value = await fetchBrandImpact(brand.id)
 }
 
 async function handleDelete() {
+  if (deleting.value) return
   showConfirm.value = false
+  deleting.value = true
+  errorMsg.value = ''
   const { error } = await deleteBrand(selectedBrand.value.id)
-  if (error) {
-    showDeleteError.value = true
-    return
-  }
+  if (error) errorMsg.value = `No se pudo eliminar la marca: ${error}`
+  deleting.value = false
   await fetchBrands()
 }
 

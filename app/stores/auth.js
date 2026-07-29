@@ -19,11 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     user.value = authUser
 
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('id, role, name, display_name')
-      .eq('id', userId)
-      .maybeSingle()
+    const { data: profileData } = await supabase.rpc('my_profile')
 
     if (profileData?.role === 'superadmin') {
       profile.value = profileData

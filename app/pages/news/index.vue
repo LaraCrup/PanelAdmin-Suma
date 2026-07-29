@@ -20,7 +20,7 @@
         {{ row.news_categories?.name ?? '—' }}
       </template>
       <template #cell-status="{ row }">
-        <Badge :status="row.status" />
+        <Badge :status="row.status" genero="f" />
       </template>
       <template #cell-publication_date="{ row }">
         {{ formatDate(row.publication_date) }}

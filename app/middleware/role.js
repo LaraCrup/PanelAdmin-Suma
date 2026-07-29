@@ -10,4 +10,8 @@ export default defineNuxtRouteMiddleware((to) => {
   if (required === 'brand' && authStore.isSuperAdmin) {
     return navigateTo('/admin/news/pendientes')
   }
+
+  if (to.meta.requiredBrandRole === 'admin' && !authStore.isBrandAdmin) {
+    return navigateTo('/marca')
+  }
 })

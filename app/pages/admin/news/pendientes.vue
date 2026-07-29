@@ -2,6 +2,8 @@
   <div>
     <PageHeader title="Novedades pendientes" />
 
+    <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
+
     <DataTable
       :columns="columns"
       :rows="newsList"
@@ -74,6 +76,7 @@ definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'super
 const { newsList, loading, fetchNews, fetchOneNews, approveNews, rejectNews } = useNews()
 
 const actionLoading = ref('')
+const errorMsg = ref('')
 const showReject = ref(false)
 const rejectReason = ref('')
 const selectedItem = ref(null)
@@ -89,7 +92,9 @@ const columns = [
 
 async function handleApprove(id) {
   actionLoading.value = id + 'a'
-  await approveNews(id)
+  errorMsg.value = ''
+  const { error } = await approveNews(id)
+  if (error) errorMsg.value = 'No se pudo aprobar la novedad. Intentá de nuevo.'
   await fetchNews({ status: 'pending' })
   actionLoading.value = ''
 }
@@ -109,7 +114,9 @@ function closeReject() {
 async function handleReject() {
   if (!rejectReason.value.trim()) return
   actionLoading.value = selectedItem.value.id + 'r'
-  await rejectNews(selectedItem.value.id, rejectReason.value.trim())
+  errorMsg.value = ''
+  const { error } = await rejectNews(selectedItem.value.id, rejectReason.value.trim())
+  if (error) errorMsg.value = 'No se pudo rechazar la novedad. Intentá de nuevo.'
   showReject.value = false
   rejectReason.value = ''
   await fetchNews({ status: 'pending' })

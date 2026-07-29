@@ -7,12 +7,13 @@
 <script setup>
 const props = defineProps({
   status: { type: String, required: true },
+  genero: { type: String, default: 'm' },
 })
 
 const map = {
-  pending:  { bg: '#FEF3C7', text: '#D97706', label: 'Pendiente' },
-  approved: { bg: '#D1FAE5', text: '#059669', label: 'Aprobado'  },
-  rejected: { bg: '#FEE2E2', text: '#DC2626', label: 'Rechazado' },
+  pending:  { bg: '#FEF3C7', text: '#D97706', m: 'Pendiente', f: 'Pendiente'  },
+  approved: { bg: '#D1FAE5', text: '#059669', m: 'Aprobado',  f: 'Aprobada'   },
+  rejected: { bg: '#FEE2E2', text: '#DC2626', m: 'Rechazado', f: 'Rechazada'  },
 }
 
 const badgeStyle = computed(() => ({
@@ -20,5 +21,5 @@ const badgeStyle = computed(() => ({
   color:           map[props.status]?.text ?? '#374151',
 }))
 
-const label = computed(() => map[props.status]?.label ?? props.status)
+const label = computed(() => map[props.status]?.[props.genero === 'f' ? 'f' : 'm'] ?? props.status)
 </script>

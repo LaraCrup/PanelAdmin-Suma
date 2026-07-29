@@ -24,17 +24,21 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   modelValue: { type: String, default: '' },
   counts: { type: Object, default: null },
+  genero: { type: String, default: 'f' },
 })
 
 defineEmits(['update:modelValue'])
 
-const tabs = [
-  { value: '',         label: 'Todas' },
-  { value: 'pending',  label: 'Pendientes' },
-  { value: 'approved', label: 'Aprobadas' },
-  { value: 'rejected', label: 'Rechazadas' },
-]
+const tabs = computed(() => {
+  const m = props.genero === 'm'
+  return [
+    { value: '',         label: m ? 'Todos' : 'Todas' },
+    { value: 'pending',  label: 'Pendientes' },
+    { value: 'approved', label: m ? 'Aprobados' : 'Aprobadas' },
+    { value: 'rejected', label: m ? 'Rechazados' : 'Rechazadas' },
+  ]
+})
 </script>

@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand', title: 'Nuevo usuario' })
+definePageMeta({ layout: 'dashboard', middleware: ['role'], requiredRole: 'brand', requiredBrandRole: 'admin', title: 'Nuevo usuario' })
 
 const authStore = useAuthStore()
 

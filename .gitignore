@@ -18,6 +18,10 @@ logs
 .fleet
 .idea
 
+# Herramientas locales de Claude Code
+.claude/skills
+__pycache__
+
 # Local env files
 .env
 .env.*

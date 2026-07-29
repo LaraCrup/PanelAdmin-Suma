@@ -13,13 +13,13 @@
     <div v-else class="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
       <div class="flex flex-wrap items-center gap-4 mb-4 text-sm text-muted">
         <span><span class="font-semibold text-text">Marca:</span> {{ brandName }}</span>
-        <Badge :status="newsStatus" />
+        <Badge :status="newsStatus" genero="f" />
       </div>
 
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.content" label="Contenido" :rows="14" required />
-        <ImageUpload v-model="form.image_url" folder="news" label="Imagen" />
+        <ImageUpload v-model="form.image_url" folder="news" label="Imagen" required />
         <div class="flex flex-col lg:grid lg:grid-cols-2 gap-4">
           <SelectField
             v-model="form.category_id"
@@ -99,6 +99,10 @@ onMounted(async () => {
 })
 
 async function handleSubmit() {
+  if (!form.image_url) {
+    errorMsg.value = 'La imagen es obligatoria.'
+    return
+  }
   loading.value = true
   errorMsg.value = ''
 

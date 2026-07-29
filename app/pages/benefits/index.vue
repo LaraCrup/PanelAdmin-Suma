@@ -6,7 +6,7 @@
       </template>
     </PageHeader>
 
-    <StatusTabs v-model="filterStatus" :counts="counts" />
+    <StatusTabs v-model="filterStatus" :counts="counts" genero="m" />
 
     <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
 

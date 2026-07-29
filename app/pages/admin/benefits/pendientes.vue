@@ -2,6 +2,8 @@
   <div>
     <PageHeader title="Beneficios pendientes" />
 
+    <p v-if="errorMsg" class="text-sm text-red-500 mb-4">{{ errorMsg }}</p>
+
     <DataTable
       :columns="columns"
       :rows="benefitsList"
@@ -59,7 +61,7 @@
       </p>
       <template #footer>
         <Button variant="secondary" @click="showApproveModal = false">Cancelar</Button>
-        <Button :loading="actionLoading.includes('a')" @click="handleApprove">Confirmar</Button>
+        <Button :loading="actionLoading === selectedItem?.id + 'a'" @click="handleApprove">Confirmar</Button>
       </template>
     </Modal>
 
@@ -101,6 +103,7 @@ const { levelOptions, fetchLevels } = useLevels()
 
 const selectedLevel = reactive({})
 const actionLoading = ref('')
+const errorMsg = ref('')
 const showApproveModal = ref(false)
 const showRejectModal = ref(false)
 const rejectReason = ref('')
@@ -135,7 +138,9 @@ function closeReject() {
 async function handleApprove() {
   showApproveModal.value = false
   actionLoading.value = selectedItem.value.id + 'a'
-  await approveBenefit(selectedItem.value.id, selectedLevel[selectedItem.value.id])
+  errorMsg.value = ''
+  const { error } = await approveBenefit(selectedItem.value.id, selectedLevel[selectedItem.value.id])
+  if (error) errorMsg.value = 'No se pudo aprobar el beneficio. Intentá de nuevo.'
   await fetchBenefits({ status: 'pending' })
   actionLoading.value = ''
 }
@@ -143,7 +148,9 @@ async function handleApprove() {
 async function handleReject() {
   if (!rejectReason.value.trim()) return
   actionLoading.value = selectedItem.value.id + 'r'
-  await rejectBenefit(selectedItem.value.id, rejectReason.value.trim())
+  errorMsg.value = ''
+  const { error } = await rejectBenefit(selectedItem.value.id, rejectReason.value.trim())
+  if (error) errorMsg.value = 'No se pudo rechazar el beneficio. Intentá de nuevo.'
   closeReject()
   await fetchBenefits({ status: 'pending' })
   actionLoading.value = ''

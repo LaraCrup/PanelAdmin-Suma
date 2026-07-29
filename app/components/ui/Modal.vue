@@ -14,6 +14,7 @@
           <div class="flex items-center justify-between px-6 py-4 border-b border-border">
             <h3 class="font-heading text-lg font-medium text-primary">{{ title }}</h3>
             <button
+              aria-label="Cerrar"
               class="text-muted hover:text-text transition-colors"
               @click="$emit('close')"
             >

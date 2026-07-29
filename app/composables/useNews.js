@@ -1,6 +1,7 @@
 export function useNews() {
   const supabase = useSupabaseClient()
   const authStore = useAuthStore()
+  const { deleteImage } = useImageUpload()
   const newsList = ref([])
   const loading = ref(false)
 
@@ -49,11 +50,21 @@ export function useNews() {
   }
 
   async function deleteNews(id) {
+    const { data: item } = await supabase
+      .from('news')
+      .select('image_url')
+      .eq('id', id)
+      .maybeSingle()
+
     const { error } = await supabase
       .from('news')
       .delete()
       .eq('id', id)
-    return { error: error?.message ?? null }
+
+    if (error) return { error: error.message }
+
+    await deleteImage(item?.image_url)
+    return { error: null }
   }
 
   async function updateNews(id, data) {

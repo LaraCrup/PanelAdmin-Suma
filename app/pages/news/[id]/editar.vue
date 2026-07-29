@@ -14,7 +14,7 @@
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
         <TextField v-model="form.title" label="Título" required />
         <TextareaField v-model="form.content" label="Contenido" :rows="14" required />
-        <ImageUpload v-model="form.image_url" folder="news" label="Imagen" />
+        <ImageUpload v-model="form.image_url" folder="news" label="Imagen" required />
         <div class="flex flex-col lg:grid lg:grid-cols-2 gap-4">          
           <SelectField
             v-model="form.category_id"
@@ -89,6 +89,10 @@ onMounted(async () => {
 })
 
 async function handleSubmit() {
+  if (!form.image_url) {
+    errorMsg.value = 'La imagen es obligatoria.'
+    return
+  }
   loading.value = true
   errorMsg.value = ''
   const { error } = await updateNews(route.params.id, form)
