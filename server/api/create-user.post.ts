@@ -83,33 +83,6 @@ export default defineEventHandler(async (event) => {
 
   const userId = authData.user.id
 
-  const displayCandidates = [name, email].filter(Boolean) as string[]
-  let profileError: string | null = 'No se pudo crear el perfil del usuario.'
-
-  for (const displayName of displayCandidates) {
-    const { error } = await adminClient.from('profiles').insert({
-      id: userId,
-      email,
-      name: name ?? '',
-      display_name: displayName,
-      role: 'user',
-    })
-    if (!error) {
-      profileError = null
-      break
-    }
-    if (error.code !== '23505') {
-      profileError = error.message
-      break
-    }
-  }
-
-  if (profileError) {
-    console.error('[create-user] profiles error:', profileError)
-    await adminClient.auth.admin.deleteUser(userId)
-    throw createError({ statusCode: 400, message: mapError(profileError) })
-  }
-
   const { error: brandUserError } = await adminClient.from('brand_users').insert({
     user_id: userId,
     brand_id: brandId,

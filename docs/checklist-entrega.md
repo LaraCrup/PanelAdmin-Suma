@@ -64,12 +64,28 @@ queda ninguna lectura ni embed de `profiles`.
 1. [x] `20260729_profiles_public_rpcs.sql` aplicada
 2. [ ] Deployar el cliente de Suma
 3. [ ] **Deployar este panel**
-4. [ ] Recién ahí aplicar `20260729_profiles_column_privileges.sql`
+4. [x] `20260729_profiles_column_privileges.sql` aplicada
 
-Si el paso 4 se hace antes del 3, el superadmin no puede entrar al panel.
+⚠️ **Los pasos 3 y 4 se hicieron al revés.** El paso 4 ya corrió, así que
+cualquier instancia del panel que esté deployada con el código viejo está rota
+en este momento: la query anterior devuelve `permission denied for table
+profiles` y el superadmin no puede entrar. El código local ya está migrado, así
+que **el deploy del panel resuelve el problema**.
+
+Estado verificado contra la base con los privilegios nuevos:
+
+| Chequeo | Resultado |
+|---------|-----------|
+| `my_profile()` con JWT del superadmin | devuelve `role: superadmin`, `name: Lara` |
+| `is_superadmin()` con JWT del superadmin | `true` (sobrevive al revoke por ser `SECURITY DEFINER`) |
+| Superadmin lee brands / brand_users / news / benefits / levels / categorías | OK |
+| Usuario de marca: `get_my_brand_id()` y `get_my_brand_role()` | OK (`admin`) |
+| Usuario de marca ve sólo los `brand_users` de su marca | OK (2 de 28) |
+| Query vieja (`select role, name from profiles`) | falla con `permission denied` — confirmado |
+| Advisor de seguridad sobre `profiles` | ya no lo marca |
 
 - [ ] Probar el login del panel con el superadmin (es lo único que cambió)
-- [ ] Después del deploy, avisarle al repo Suma que puede correr el paso 4
+- [ ] Deployar el panel
 
 #### Sobre el `INSERT` de `anon` que reportaron
 
@@ -105,7 +121,7 @@ entrega.
 | **`profiles_update` sin `WITH CHECK`** | Se recreó la policy con `WITH CHECK` explícito y se borró la duplicada `Enable authenticated users to update their own profile`. |
 | **Borrado cruzado de imágenes** | La policy `Brand users delete admin-media` dejaba que un usuario de cualquier marca borrara imágenes de cualquier otra. Ahora bloquea borrar un archivo que esté referenciado por contenido de otra marca. |
 | **Policies duplicadas** | Se borró `Allow read levels to authenticated users` (duplicaba `levels_select`). |
-| **8 usuarios sin fila en `profiles`** | Se crearon las filas faltantes con `role = 'user'` y `display_name` = el nombre del usuario. |
+| **Usuarios del panel mezclados con usuarios de la app** | Los usuarios de `brand_users` ya **no** tienen fila en `profiles`. Ver "Separación entre `profiles` y `brand_users`" más abajo. |
 
 ⚠️ **Verificar por esto:**
 
@@ -142,7 +158,34 @@ entrega.
 | — | La imagen es **obligatoria al editar** una novedad (antes sólo al crearla). | `news/[id]/editar.vue`, `admin/news/[id]/editar.vue` |
 | — | `actionLoading.includes('a')` comparaba mal (buscaba la letra "a" adentro del UUID). | `admin/benefits/pendientes.vue` |
 | — | El botón de cerrar del `Modal` ahora tiene `aria-label`. | `Modal.vue` |
-| — | `create-user` ahora **crea la fila en `profiles`** además del usuario de auth y el `brand_users`. Si falla, hace rollback del usuario. | `create-user.post.ts` |
+| — | `create-user` **ya no inserta en `profiles`**: crea el usuario de auth y la fila en `brand_users`. Si falla, hace rollback del usuario. | `create-user.post.ts` |
+
+#### Separación entre `profiles` y `brand_users`
+
+`profiles` es la tabla de la **app Suma** (social y gamificación: amigos,
+comunidades, hábitos, XP). `brand_users` es la del **panel**. Son dos poblaciones
+distintas y no hay nada en la base que las ate: `brand_users.user_id` apunta a
+`auth.users`, no a `profiles`.
+
+Aun así `create-user` insertaba una fila en `profiles` por cada usuario de panel.
+Resultado: de 34 perfiles, 28 eran usuarios de panel, y aparecían en la búsqueda
+de amigos de la app (`searchUsers` filtra `profiles` por `display_name`). También
+forzaba un workaround por el UNIQUE de `profiles.display_name`, que podía chocar
+con el nickname de un usuario real.
+
+Se quitó el insert y se borraron las 28 filas. Se verificó antes que no colgaba
+nada de ellas: 0 hábitos, 0 miembros de comunidad, 0 mensajes, 0 solicitudes de
+amistad, 0 suscripciones push, 0 XP.
+
+Lo único que sigue necesitando `profiles` es el superadmin, porque
+`is_superadmin()` lee `profiles.role`. No se movió a `brand_users` a propósito:
+`brand_id` es NOT NULL con FK a `brands`, así que habría que inventar una marca
+fantasma, y `get_my_brand_id()` empezaría a devolverla — las policies de
+`benefits` y `news` filtrarían al superadmin por marca en vez de darle acceso
+total. El superadmin además es un usuario real de la app, así que su perfil es
+legítimo.
+
+Queda `profiles` con 6 filas, todas de usuarios reales de la app.
 
 #### Sobre el punto 9 — borrar marca
 
@@ -191,6 +234,11 @@ Ahora:
 
 ### Superadmin — novedades
 
+> **Antes de empezar:** hoy las 23 novedades y los 49 beneficios de la base están
+> todos en `approved`. No hay nada `pending` ni `rejected`, así que las pantallas
+> de Pendientes y Rechazadas van a estar vacías. Para probar el circuito de
+> aprobación tenés que entrar primero como usuario de marca y crear contenido.
+
 - [ ] Aprobar una novedad → desaparece de Pendientes y aparece en Activas
 - [ ] Rechazar sin escribir motivo → el botón está deshabilitado
 - [ ] Rechazar con motivo → aparece en Rechazadas con el motivo visible
@@ -228,7 +276,8 @@ Ahora:
 - [ ] Crear usuario con un email ya existente → "Ya existe un usuario registrado
       con ese email"
 - [ ] **El usuario recién creado puede loguearse**
-- [ ] El usuario recién creado **tiene fila en `profiles`** (esto es lo nuevo)
+- [ ] El usuario recién creado **no tiene fila en `profiles`** y no aparece en la
+      búsqueda de amigos de la app Suma
 - [ ] Eliminar un usuario → desaparece de la lista **y ya no puede loguearse**
 
 ### Marca — contenido

@@ -89,8 +89,8 @@ Crear un usuario de Supabase Auth con contraseña requiere la service role key, 
 
 
 POST /api/create-user
-Body: { email, password, name, displayName, brandId, brandRole }
-El server route (server/api/create-user.post.ts) llama a supabase.auth.admin.createUser con SUPABASE_SERVICE_ROLE_KEY y luego inserta en profiles y brand_users.
+Body: { email, password, name, brandId, brandRole }
+El server route (server/api/create-user.post.ts) llama a supabase.auth.admin.createUser con SUPABASE_SERVICE_ROLE_KEY y luego inserta en brand_users. No inserta en profiles: profiles es de la app Suma, no del panel (ver docs/checklist-entrega.md).
 
 Imágenes
 Bucket Supabase Storage: admin-media (público).
