@@ -8,7 +8,9 @@ export default defineEventHandler(async (event) => {
   } catch (e) {
     console.error('[delete-user] serverSupabaseUser error:', e)
   }
-  if (!caller) {
+  const callerId = caller?.sub ?? caller?.id
+
+  if (!callerId) {
     throw createError({ statusCode: 401, message: 'No autorizado.' })
   }
 
@@ -46,14 +48,14 @@ export default defineEventHandler(async (event) => {
   const { data: callerProfile } = await adminClient
     .from('profiles')
     .select('role')
-    .eq('id', caller.id)
+    .eq('id', callerId)
     .maybeSingle()
 
   if (callerProfile?.role !== 'superadmin') {
     const { data: callerBrandUser } = await adminClient
       .from('brand_users')
       .select('id')
-      .eq('user_id', caller.id)
+      .eq('user_id', callerId)
       .eq('brand_id', targetBrandUser.brand_id)
       .eq('role', 'admin')
       .maybeSingle()

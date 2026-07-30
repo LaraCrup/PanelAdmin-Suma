@@ -9,11 +9,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/')
   }
 
-  if (user.value?.id) {
+  const userId = user.value?.sub ?? user.value?.id
+
+  if (userId) {
     const authStore = useAuthStore()
     if (!authStore.profile) {
       try {
-        await authStore.fetchUserData(user.value.id)
+        await authStore.fetchUserData(userId)
       } catch {
         await supabase.auth.signOut()
         authStore.clear()

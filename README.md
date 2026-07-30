@@ -14,8 +14,8 @@ Panel de administración web para marcas que publican contenido en la plataforma
 | Rol | Acceso |
 |-----|--------|
 | `superadmin` | Aprueba/rechaza contenido, gestiona marcas y usuarios |
-| `brand_admin` | Gestiona contenido y usuarios de su marca |
-| `brand_member` | Gestiona contenido de su marca (sin gestión de usuarios) |
+| `admin` | Gestiona contenido y usuarios de su marca |
+| `member` | Gestiona contenido de su marca (sin gestión de usuarios) |
 
 ## Variables de entorno
 

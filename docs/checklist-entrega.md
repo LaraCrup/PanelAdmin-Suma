@@ -62,8 +62,8 @@ queda ninguna lectura ni embed de `profiles`.
 #### Orden de despliegue
 
 1. [x] `20260729_profiles_public_rpcs.sql` aplicada
-2. [ ] Deployar el cliente de Suma
-3. [ ] **Deployar este panel**
+2. [x] Deployar el cliente de Suma
+3. [x] **Deployar este panel**
 4. [x] `20260729_profiles_column_privileges.sql` aplicada
 
 ⚠️ **Los pasos 3 y 4 se hicieron al revés.** El paso 4 ya corrió, así que
@@ -84,8 +84,8 @@ Estado verificado contra la base con los privilegios nuevos:
 | Query vieja (`select role, name from profiles`) | falla con `permission denied` — confirmado |
 | Advisor de seguridad sobre `profiles` | ya no lo marca |
 
-- [ ] Probar el login del panel con el superadmin (es lo único que cambió)
-- [ ] Deployar el panel
+- [x] Probar el login del panel con el superadmin (es lo único que cambió)
+- [x] Deployar el panel
 
 #### Sobre el `INSERT` de `anon` que reportaron
 
@@ -99,15 +99,15 @@ entrega.
 
 ### 1.2 Otros pendientes menores
 
-- [ ] Activar **"Leaked password protection"** en Supabase → Authentication →
+- [x] Activar **"Leaked password protection"** en Supabase → Authentication →
       Policies. Está apagado.
-- [ ] El README dice que los roles son `brand_admin` / `brand_member`, pero en la
+- [x] El README dice que los roles son `brand_admin` / `brand_member`, pero en la
       base son `admin` / `member`. Corregir la tabla del README.
-- [ ] Las funciones `SECURITY DEFINER` (`is_superadmin`, `get_my_brand_id`,
+- [x] Las funciones `SECURITY DEFINER` (`is_superadmin`, `get_my_brand_id`,
       `get_my_brand_role`, etc.) son ejecutables por `anon`. No es explotable
       porque todas dependen de `auth.uid()`, que es null sin sesión, pero si te
       lo preguntan en la defensa, esa es la respuesta.
-- [ ] Probar el deploy real, no sólo local.
+- [x] Probar el deploy real, no sólo local.
 
 ---
 
@@ -125,21 +125,21 @@ entrega.
 
 ⚠️ **Verificar por esto:**
 
-- [ ] En la **app Suma**: entrar a "Mi perfil → Editar", cambiar nombre y
+- [x] En la **app Suma**: entrar a "Mi perfil → Editar", cambiar nombre y
       display_name y guardar. Debe funcionar igual que antes.
-- [ ] En la **app Suma**: ganar XP haciendo un hábito. El nivel y los puntos
+- [x] En la **app Suma**: ganar XP haciendo un hábito. El nivel y los puntos
       deben seguir actualizándose.
-- [ ] En la **app Suma**: buscar usuarios en la pantalla de amigos. Los 8
+- [x] En la **app Suma**: buscar usuarios en la pantalla de amigos. Los 8
       usuarios del panel (`maria.adidas`, `sofia.nike`, `diego.topper`,
       `gabriela.ombu`, `vanesa.megatlon`, `florencia.yenny`, `melina.sport78`,
       `horacio.patagonia`) ahora tienen perfil y **podrían aparecer** en la
       búsqueda. Si molesta, avisame y los saco de la búsqueda.
-- [ ] Como usuario de marca: subir una imagen nueva a una novedad, guardar, y
+- [x] Como usuario de marca: subir una imagen nueva a una novedad, guardar, y
       confirmar que la vieja desaparece del bucket.
 
 ### Storage
 
-- [ ] Se borraron **30 imágenes huérfanas** (9 de news, 11 de benefits, 10 de
+- [x] Se borraron **30 imágenes huérfanas** (9 de news, 11 de benefits, 10 de
       brands). El bucket quedó en 92 archivos, exactamente los 92 referenciados
       en la base. Verificar que **ninguna** novedad, beneficio o logo de marca
       quedó con la imagen rota.
@@ -221,16 +221,16 @@ Ahora:
 
 ### Login y accesos
 
-- [ ] Login con email inexistente → "No existe una cuenta con ese email"
-- [ ] Login con contraseña incorrecta → "Contraseña incorrecta"
-- [ ] Login con un usuario común de la app Suma (rol `user`) → lo rechaza con
+- [x] Login con email inexistente → "No existe una cuenta con ese email"
+- [x] Login con contraseña incorrecta → "Contraseña incorrecta"
+- [x] Login con un usuario común de la app Suma (rol `user`) → lo rechaza con
       "No tenés acceso al panel de administración"
-- [ ] Errar la contraseña más de 10 veces seguidas → sigue funcionando el login
+- [x] Errar la contraseña más de 10 veces seguidas → sigue funcionando el login
       (el rate limit sólo afecta al mensaje diferenciado, no al login en sí)
-- [ ] Refrescar (F5) estando logueada en una página interna → no te expulsa
-- [ ] Entrar a `/admin/marcas` con un usuario de marca → redirige a `/news`
+- [x] Refrescar (F5) estando logueada en una página interna → no te expulsa
+- [x] Entrar a `/admin/marcas` con un usuario de marca → redirige a `/news`
 - [ ] Entrar a `/news` con el superadmin → redirige a `/admin/news/pendientes`
-- [ ] Cerrar sesión y volver atrás con el botón del navegador → no entra
+- [x] Cerrar sesión y volver atrás con el botón del navegador → no entra
 
 ### Superadmin — novedades
 
@@ -239,33 +239,33 @@ Ahora:
 > de Pendientes y Rechazadas van a estar vacías. Para probar el circuito de
 > aprobación tenés que entrar primero como usuario de marca y crear contenido.
 
-- [ ] Aprobar una novedad → desaparece de Pendientes y aparece en Activas
-- [ ] Rechazar sin escribir motivo → el botón está deshabilitado
-- [ ] Rechazar con motivo → aparece en Rechazadas con el motivo visible
-- [ ] Ver el detalle (modal) de una pendiente, una activa y una rechazada
-- [ ] Editar una novedad ya aprobada → guarda y vuelve a Activas (no a Pendientes)
-- [ ] Editar una novedad y borrarle la imagen → no deja guardar
-- [ ] Filtrar por marca en Activas y en Rechazadas
-- [ ] **Verificar que la novedad aprobada aparece en la app Suma**
+- [x] Aprobar una novedad → desaparece de Pendientes y aparece en Activas
+- [x] Rechazar sin escribir motivo → el botón está deshabilitado
+- [x] Rechazar con motivo → aparece en Rechazadas con el motivo visible
+- [x] Ver el detalle (modal) de una pendiente, una activa y una rechazada
+- [x] Editar una novedad ya aprobada → guarda y vuelve a Activas (no a Pendientes)
+- [x] Editar una novedad y borrarle la imagen → no deja guardar
+- [x] Filtrar por marca en Activas y en Rechazadas
+- [x] **Verificar que la novedad aprobada aparece en la app Suma**
 
 ### Superadmin — beneficios
 
-- [ ] El botón Aprobar está deshabilitado hasta elegir nivel
-- [ ] Aprobar con nivel → aparece en Activos con ese nivel
-- [ ] Los tabs dicen "Todos / Aprobados / Rechazados" (masculino)
-- [ ] Filtrar por marca **y** por nivel al mismo tiempo en Activos
-- [ ] Editar un beneficio aprobado → aparece el selector de Nivel; editar uno
+- [x] El botón Aprobar está deshabilitado hasta elegir nivel
+- [x] Aprobar con nivel → aparece en Activos con ese nivel
+- [x] Los tabs dicen "Todos / Aprobados / Rechazados" (masculino)
+- [x] Filtrar por marca **y** por nivel al mismo tiempo en Activos
+- [x] Editar un beneficio aprobado → aparece el selector de Nivel; editar uno
       pendiente → no aparece
-- [ ] **Verificar que el beneficio aprobado aparece en la app Suma con el nivel
+- [x] **Verificar que el beneficio aprobado aparece en la app Suma con el nivel
       correcto**
 
 ### Superadmin — marcas
 
-- [ ] Crear marca sin logo → se ve la inicial en un círculo
-- [ ] Crear marca con sitio web → el link abre en pestaña nueva
+- [x] Crear marca sin logo → se ve la inicial en un círculo
+- [x] Crear marca con sitio web → el link abre en pestaña nueva
 - [ ] Borrar una marca **sin** contenido → el modal dice sólo "no se puede
       deshacer"
-- [ ] Borrar una marca **con** contenido → el modal enumera cuántas novedades,
+- [x] Borrar una marca **con** contenido → el modal enumera cuántas novedades,
       beneficios y usuarios se van a borrar
 - [ ] Después de borrar una marca con contenido: sus usuarios **ya no pueden
       loguearse** y sus imágenes desaparecieron del bucket

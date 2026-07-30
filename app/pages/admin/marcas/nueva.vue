@@ -41,7 +41,7 @@ const errorMsg = ref('')
 async function handleSubmit() {
   loading.value = true
   errorMsg.value = ''
-  const { error } = await createBrand({ ...form, created_by: user.value?.id })
+  const { error } = await createBrand({ ...form, created_by: user.value?.sub ?? user.value?.id })
   if (error) {
     errorMsg.value = error
   } else {
