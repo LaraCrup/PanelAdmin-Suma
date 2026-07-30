@@ -25,7 +25,7 @@
           <img
             v-if="authStore.brand?.image_url"
             :src="authStore.brand.image_url"
-            class="h-8 w-8 rounded-lg object-cover flex-shrink-0"
+            class="h-8 w-8 rounded-lg object-contain flex-shrink-0"
             :alt="authStore.brand?.name || 'Logo de la marca'"
           />
           <div

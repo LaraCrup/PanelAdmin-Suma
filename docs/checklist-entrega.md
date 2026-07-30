@@ -89,13 +89,64 @@ Estado verificado contra la base con los privilegios nuevos:
 
 #### Sobre el `INSERT` de `anon` que reportaron
 
-Tienen razón en el GRANT: `anon` tiene INSERT sobre las 9 columnas de `profiles`.
-Pero **no es explotable hoy**: la policy `Enable authenticated users to insert
-their own profile` tiene `WITH CHECK (auth.uid() = id)`, y para `anon`
-`auth.uid()` es `NULL`, con lo cual `NULL = id` evalúa a `NULL` y Postgres
-rechaza la fila. El GRANT es redundante, no un agujero. Conviene limpiarlo igual
-(`revoke insert on public.profiles from anon`), pero no es urgente ni bloquea la
-entrega.
+Tenían razón en el GRANT, aunque para `anon` no era explotable: la policy
+`Enable authenticated users to insert their own profile` tiene
+`WITH CHECK (auth.uid() = id)`, y para `anon` `auth.uid()` es `NULL`, con lo cual
+`NULL = id` evalúa a `NULL` y Postgres rechaza la fila. Ya está revocado:
+`anon` hoy no tiene ni SELECT ni INSERT sobre `profiles`.
+
+#### Escalada a superadmin por `INSERT` (encontrada el 30/07, corregida)
+
+El mismo GRANT **sí era explotable para `authenticated`**, y era el agujero más
+grave que quedaba. `authenticated` tenía INSERT sobre las 9 columnas, incluida
+`role`, y la policy sólo exige `auth.uid() = id`. Como los usuarios de
+`brand_users` **ya no tienen fila en `profiles`** (justamente por la separación
+descrita más abajo), nada impedía que se insertaran la suya con
+`role: 'superadmin'`.
+
+O sea: cualquier usuario de marca, incluido un `member`, desde la consola del
+navegador y con la anon key que ya tiene, se volvía superadmin del panel y ganaba
+acceso total a `news`, `benefits`, `brands` y `brand_users` de **todas** las
+marcas, porque esas policies cuelgan de `is_superadmin()`.
+
+Verificado contra la base simulando el JWT de un `member`:
+`INSERT PERMITIDO | is_superadmin() = true`.
+
+Dos motivos por los que se había pasado por alto:
+
+- El fix de "Escalada de privilegios a superadmin" (sección 2) cerró el
+  **UPDATE** de `profiles.role`, no el INSERT. Y borrar las 28 filas de
+  `profiles` es lo que volvió el INSERT viable: mientras cada usuario de panel
+  tenía su fila, la PK lo bloqueaba.
+- Probado con `Prefer: return=representation` devuelve `permission denied`,
+  porque la respuesta necesita SELECT sobre `role`. Parece cerrado y no lo está:
+  sin ese header el INSERT pasa.
+
+Migración aplicada (`profiles_insert_role_privilege`):
+
+```sql
+revoke insert on public.profiles from authenticated;
+grant insert (id, email, name, display_name, avatar_url, created_at,
+              experience_points, current_level)
+  on public.profiles to authenticated;
+revoke truncate on public.profiles from anon, authenticated;
+revoke delete on public.profiles from anon;
+alter policy "Enable authenticated users to insert their own profile"
+  on public.profiles to authenticated;
+```
+
+Sólo saca `role` del INSERT. `handle_new_user` es `SECURITY DEFINER`, así que el
+registro de la app Suma no se ve afectado, y la app no inserta en `profiles`
+desde el cliente (verificado en el repo Suma).
+
+| Chequeo post-fix | Resultado |
+|------------------|-----------|
+| `member` inserta su perfil con `role: 'superadmin'` | `permission denied` |
+| `member` inserta su perfil sin `role` | sigue funcionando |
+| `my_profile()` con JWT del superadmin | `role: superadmin`, `name: Lara` |
+| `is_superadmin()` con JWT de un `member` | `false` |
+| `get_my_brand_role()` con JWT de un `member` | `member` |
+| Filas de `profiles` | 6, sin residuos de las pruebas |
 
 ### 1.2 Otros pendientes menores
 
@@ -117,7 +168,7 @@ entrega.
 
 | Qué | Detalle |
 |-----|---------|
-| **Escalada de privilegios a superadmin** | `profiles.role` ya no es actualizable por `authenticated` ni `anon`. Antes, cualquier usuario de la app Suma podía hacer un PATCH a su propio perfil poniendo `role: 'superadmin'` y entrar al panel con permisos totales. Ahora `authenticated` sólo puede actualizar `name`, `display_name`, `avatar_url`, `experience_points` y `current_level`. |
+| **Escalada de privilegios a superadmin** | `profiles.role` ya no es actualizable por `authenticated` ni `anon`. Antes, cualquier usuario de la app Suma podía hacer un PATCH a su propio perfil poniendo `role: 'superadmin'` y entrar al panel con permisos totales. Ahora `authenticated` sólo puede actualizar `name`, `display_name`, `avatar_url`, `experience_points` y `current_level`. El mismo agujero por `INSERT` se cerró después: ver 1.1. |
 | **`profiles_update` sin `WITH CHECK`** | Se recreó la policy con `WITH CHECK` explícito y se borró la duplicada `Enable authenticated users to update their own profile`. |
 | **Borrado cruzado de imágenes** | La policy `Brand users delete admin-media` dejaba que un usuario de cualquier marca borrara imágenes de cualquier otra. Ahora bloquea borrar un archivo que esté referenciado por contenido de otra marca. |
 | **Policies duplicadas** | Se borró `Allow read levels to authenticated users` (duplicaba `levels_select`). |
@@ -229,7 +280,7 @@ Ahora:
       (el rate limit sólo afecta al mensaje diferenciado, no al login en sí)
 - [x] Refrescar (F5) estando logueada en una página interna → no te expulsa
 - [x] Entrar a `/admin/marcas` con un usuario de marca → redirige a `/news`
-- [ ] Entrar a `/news` con el superadmin → redirige a `/admin/news/pendientes`
+- [x] Entrar a `/news` con el superadmin → redirige a `/admin/news/pendientes`
 - [x] Cerrar sesión y volver atrás con el botón del navegador → no entra
 
 ### Superadmin — novedades
@@ -263,68 +314,104 @@ Ahora:
 
 - [x] Crear marca sin logo → se ve la inicial en un círculo
 - [x] Crear marca con sitio web → el link abre en pestaña nueva
-- [ ] Borrar una marca **sin** contenido → el modal dice sólo "no se puede
+- [x] Borrar una marca **sin** contenido → el modal dice sólo "no se puede
       deshacer"
 - [x] Borrar una marca **con** contenido → el modal enumera cuántas novedades,
       beneficios y usuarios se van a borrar
-- [ ] Después de borrar una marca con contenido: sus usuarios **ya no pueden
+- [x] Después de borrar una marca con contenido: sus usuarios **ya no pueden
       loguearse** y sus imágenes desaparecieron del bucket
 
 ### Superadmin — usuarios
 
-- [ ] Crear usuario con contraseña floja → checklist en rojo y no deja enviar
-- [ ] Crear usuario con un email ya existente → "Ya existe un usuario registrado
+- [x] Crear usuario con contraseña floja → checklist en rojo y no deja enviar
+- [x] Crear usuario con un email ya existente → "Ya existe un usuario registrado
       con ese email"
-- [ ] **El usuario recién creado puede loguearse**
-- [ ] El usuario recién creado **no tiene fila en `profiles`** y no aparece en la
+- [x] **El usuario recién creado puede loguearse**
+- [x] El usuario recién creado **no tiene fila en `profiles`** y no aparece en la
       búsqueda de amigos de la app Suma
-- [ ] Eliminar un usuario → desaparece de la lista **y ya no puede loguearse**
+- [x] Eliminar un usuario → desaparece de la lista **y ya no puede loguearse**
 
-### Marca — contenido
+### Marca
 
-- [ ] Crear novedad sin imagen → "La imagen es obligatoria"
-- [ ] **Editar** novedad y borrarle la imagen → "La imagen es obligatoria"
-- [ ] Subir una imagen de más de 2MB → error de tamaño
-- [ ] Subir un PDF o un GIF → error de formato
-- [ ] Fecha de publicación futura → el input no lo permite
-- [ ] Crear beneficio con "Válido hasta" = hoy → el input no lo permite
-- [ ] Editar una novedad **pendiente** → funciona
-- [ ] Editar una **aprobada** → el botón Editar no aparece; entrar por URL a mano
+> **Cómo se reparten los permisos de marca:** sobre `news` y `benefits` las
+> policies filtran sólo por marca (`brand_id = get_my_brand_id()`), no por rol de
+> marca. O sea que **`admin` y `member` pueden hacer exactamente lo mismo con el
+> contenido**: crear, editar mientras esté pendiente y eliminar. La única
+> diferencia entre los dos roles es la **gestión de usuarios** en `/marca`. Está
+> hecho a propósito; si te lo preguntan en la defensa, esa es la respuesta.
+>
+> Usuarios de prueba: `test.admin@suma-demo.com` (admin) y
+> `test.member@suma-demo.com` (member), los dos de la misma marca.
+
+#### Admin de marca — contenido
+
+- [x] Crear novedad sin imagen → "La imagen es obligatoria"
+- [x] **Editar** novedad y borrarle la imagen → "La imagen es obligatoria"
+- [x] Subir una imagen de más de 2MB → error de tamaño
+- [x] Subir un PDF o un GIF → error de formato
+- [x] Fecha de publicación futura → el input no lo permite
+- [x] Crear beneficio con "Válido hasta" = hoy → el input no lo permite
+- [x] Editar una novedad **pendiente** → funciona
+- [x] Editar una **aprobada** → el botón Editar no aparece; entrar por URL a mano
       redirige a la lista
-- [ ] Los tabs Todas/Pendientes/Aprobadas/Rechazadas muestran los contadores bien
-- [ ] En Rechazadas se ve la columna "Motivo de rechazo"
-- [ ] Eliminar una novedad → sale el modal de confirmación, y **la imagen
+- [x] Los tabs Todas/Pendientes/Aprobadas/Rechazadas muestran los contadores bien
+- [x] En Rechazadas se ve la columna "Motivo de rechazo"
+- [x] Eliminar una novedad → sale el modal de confirmación, y **la imagen
       desaparece del bucket**
 
-### Marca — usuarios
+#### Admin de marca — usuarios
 
-- [ ] Como **admin de marca**: cambiar el rol de otro usuario a Miembro
-- [ ] Como **admin de marca**: no podés cambiar tu propio rol ni eliminarte
-      (aparece el chip "Vos")
-- [ ] Como **member**: no ves el botón "+ Nuevo usuario" ni los selectores de rol
-- [ ] Como **member**: entrar a `/marca/nuevo-usuario` escribiendo la URL →
-      **ahora te rebota a `/marca`**
-- [ ] Solo ves usuarios de tu marca, no de otras
+- [x] Ves el botón "+ Nuevo usuario" y los selectores de rol de cada fila
+- [x] Crear un usuario nuevo de tu marca → **puede loguearse** y ve el panel de
+      tu marca
+- [x] Cambiar el rol de otro usuario a Miembro → el cambio persiste al refrescar
+- [x] No podés cambiar tu propio rol ni eliminarte (aparece el chip "Vos")
+- [x] Eliminar a otro usuario de tu marca → desaparece de la lista **y ya no
+      puede loguearse** (verificado en la base: se borró la fila de `brand_users`
+      **y** el usuario de `auth.users`)
+- [x] Solo ves usuarios de tu marca, no de otras
+
+#### Member — contenido
+
+Mismo circuito que el admin de marca, para confirmar que el rol no le recorta
+nada del contenido:
+
+- [x] Crear una novedad y un beneficio → quedan en Pendiente
+- [x] Editar tu novedad **pendiente** → funciona
+- [x] Editar una **aprobada** → el botón Editar no aparece; entrar por URL a mano
+      redirige a la lista
+- [x] Eliminar una novedad propia → sale el modal y la imagen desaparece del
+      bucket
+- [x] Las validaciones de imagen y de fechas se comportan igual que con el admin
+
+#### Member — usuarios
+
+- [x] Ves la lista de usuarios de tu marca, pero **sin** el botón "+ Nuevo
+      usuario" y **sin** los selectores de rol
+- [x] No aparece el botón de eliminar en ninguna fila
+- [x] Entrar a `/marca/nuevo-usuario` escribiendo la URL → **te rebota a
+      `/marca`**
+- [x] Solo ves usuarios de tu marca, no de otras
 
 ### Visual y responsive
 
-- [ ] Sidebar en mobile: abre, cierra con la X, cierra con el overlay, cierra al
+- [x] Sidebar en mobile: abre, cierra con la X, cierra con el overlay, cierra al
       navegar
-- [ ] Todas las tablas scrollean horizontal en mobile sin romper la página
-- [ ] Los modales no se cortan con contenido largo (probá una novedad con mucho
+- [x] Todas las tablas scrollean horizontal en mobile sin romper la página
+- [x] Los modales no se cortan con contenido largo (probá una novedad con mucho
       texto)
-- [ ] Se cargan las fuentes Montserrat Alternates y Quicksand
-- [ ] El favicon y el título de la pestaña cambian bien en cada página
-- [ ] Estados vacíos: creá un filtro sin resultados y mirá el `EmptyState`
-- [ ] Zoom al 200% → no se rompe nada
+- [x] Se cargan las fuentes Montserrat Alternates y Quicksand
+- [x] El favicon y el título de la pestaña cambian bien en cada página
+- [x] Estados vacíos: creá un filtro sin resultados y mirá el `EmptyState`
+- [x] Zoom al 200% → no se rompe nada
 
 ### Antes de entregar
 
-- [ ] `npm run build` sin errores
-- [ ] `.env` **no** está en el repo (verificado: nunca se commiteó)
-- [ ] Commitear los cambios de `.gitignore` y el borrado de `.claude/skills`
-- [ ] Resolver el punto 1.1 (policy de `profiles`)
-- [ ] Corregir la tabla de roles del README
+- [x] `npm run build` sin errores
+- [x] `.env` **no** está en el repo (verificado: nunca se commiteó)
+- [x] Commitear los cambios de `.gitignore` y el borrado de `.claude/skills`
+- [x] Resolver el punto 1.1 (policy de `profiles`)
+- [x] Corregir la tabla de roles del README
 
 ---
 
